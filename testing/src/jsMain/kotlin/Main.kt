@@ -4,9 +4,10 @@ import dev.triumphteam.horizon.annotation.Route
 import kotlinx.browser.window
 import kotlinx.html.a
 import kotlinx.html.div
+import kotlinx.html.js.br
 import kotlinx.html.js.onClickFunction
 
-public fun main() {
+public suspend fun main() {
     app {
 
         route<ExampleRoute> { route ->
@@ -54,6 +55,36 @@ public fun main() {
             }
         }
 
+        route<RouteWithVariable> { route ->
+            render {
+                div {
+                    +"You are on route with variable: ${route.variable}"
+                }
+
+                a {
+                    href = "/example"
+                    +"Go to variable: example!"
+
+                    onClickFunction = { event ->
+                        event.preventDefault()
+                        println("Uh")
+                        Application.goTo("/example")
+                    }
+                }
+                br()
+                a {
+                    href = "/example"
+                    +"Go to variable: another!"
+
+                    onClickFunction = { event ->
+                        event.preventDefault()
+                        println("Uh")
+                        Application.goTo("/another")
+                    }
+                }
+            }
+        }
+
         /* routes<Test> {
 
          }*/
@@ -67,3 +98,6 @@ public object ExampleRoute
 
 @Route("/example2")
 public object ExampleRoute2
+
+@Route("/with-variable")
+public data class RouteWithVariable(public val variable: String)

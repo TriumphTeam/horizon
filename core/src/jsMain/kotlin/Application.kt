@@ -29,7 +29,15 @@ public object Application {
     }
 
     public fun goTo(path: String) {
-        router.navigateTo(path)
+        val currentPath = window.location.pathname
+        val segments = currentPath.split("/").filter { it.isNotEmpty() }
+        val newPath = if (segments.isEmpty()) {
+            path
+        } else {
+            "/${segments.dropLast(1).joinToString("/")}$path"
+        }
+        // TODO CLEAN UP
+        router.navigateTo(newPath)
     }
 
     public fun index(block: FunctionalComponent.() -> Unit) {

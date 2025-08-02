@@ -1,15 +1,13 @@
 package dev.triumphteam.horizon.router
 
-import dev.triumphteam.horizon.Application.rootElement
 import dev.triumphteam.horizon.component.CachedComponent
+import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.EmptyComponent
 import dev.triumphteam.horizon.component.FunctionalComponent
 import dev.triumphteam.horizon.component.SimpleFunctionalComponent
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.html.Entities
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.modules.EmptySerializersModule
 import org.w3c.dom.Element
 
 @PublishedApi
@@ -32,7 +30,8 @@ internal class Router(private val rootElement: Element) {
 
     private val routes: MutableList<Route> = mutableListOf()
 
-    private var currentRoute: Route? = null
+    @PublishedApi
+    internal var currentRoute: DecodedRoute? = null
 
     @PublishedApi
     internal fun route(route: Route) {
@@ -60,37 +59,65 @@ internal class Router(private val rootElement: Element) {
             return
         }
 
-        println("Found route, $route")
-        when (val action = route.action) {
+        handleRoute(route, pathSegments)
+    }
+
+    private fun handleRoute(route: Route, pathSegments: List<String>) {
+        val decodedRoute = when (val action = route.action) {
             is RoutedComponentRouteAction<*> -> handleRoutedComponentRouteAction(
                 route = route,
                 action = action,
                 segments = pathSegments,
             )
 
-            else -> {}
+            else -> error("Unsupported route action!")
         }
+
+        println("Going to check if routes are the same.")
+
+        val currentRoute = this.currentRoute
+        if (currentRoute != null && currentRoute.route == route && currentRoute.routeObject == decodedRoute.routeObject) {
+            // Found the same route, so we don't update anything.
+            println("same route!!!")
+            return
+        }
+
+        // Unmount current route so new one can take its place.
+        currentRoute?.unmount()
+
+        // We have a new route, so we need to set it as current.
+        this.currentRoute = decodedRoute
+
+        // Then render it to the dom.
+        decodedRoute.render()
     }
 
     private fun handleRoutedComponentRouteAction(
         route: Route,
         action: RoutedComponentRouteAction<*>,
         segments: List<String>,
-    ) {
+    ): DecodedRoute {
+        // We need to remove segments that aren't route variables.
         val pathCount = route.segments.count { it.type == SegmentType.EXACT }
         val leftOverSegments = segments.drop(pathCount)
 
-        val routeData = RouteDecoder(leftOverSegments).decodeSerializableValue(action.serializer)
+        // Then decode the route into its route object.
+        val routeObject = RouteDecoder(leftOverSegments).decodeSerializableValue(action.serializer)
+            ?: error("Failed to decode route data!")
+
+        // Invoke the component function.
         val functionalComponent = SimpleFunctionalComponent()
-        action.block.invoke(functionalComponent, routeData.asDynamic())
+        action.block.invoke(functionalComponent, routeObject.asDynamic())
 
-
-        // TODO: CACHING AND SHIT.
-        CachedComponent(
-            parent = EmptyComponent,
-            boundNode = rootElement,
-            render = functionalComponent.getComponentRender(),
-        ).render()
+        return DecodedRoute(
+            route = route,
+            routeObject = routeObject,
+            component = CachedComponent(
+                parent = EmptyComponent,
+                boundNode = rootElement,
+                render = functionalComponent.getComponentRender(),
+            ),
+        )
     }
 
     private fun matchRoute(pathSegments: List<String>, route: Route): Boolean {
@@ -126,3 +153,18 @@ internal data class Route(
     internal val isIndex: Boolean = false,
     internal val action: RouteAction,
 )
+
+internal data class DecodedRoute(
+    internal val route: Route,
+    internal val routeObject: Any,
+    internal val component: Component,
+) {
+
+    internal fun unmount() {
+        component.unmount()
+    }
+
+    internal fun render() {
+        component.render()
+    }
+}

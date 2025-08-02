@@ -2,6 +2,7 @@ package dev.triumphteam.horizon.component
 
 import dev.triumphteam.horizon.dom.DOMBuilder
 import kotlinx.browser.document
+import kotlinx.dom.clear
 import kotlinx.html.HtmlTagMarker
 import kotlinx.html.Tag
 import kotlinx.html.TagConsumer
@@ -44,15 +45,17 @@ internal class CachedComponent(
         rendered.forEach(Component::unmount)
         // Then the list of previously rendered components.
         rendered.clear()
+        // Then remove itself from the dom.
+        cachedElements?.forEach(boundNode::removeChild)
     }
 
     override fun render() {
         // Create elements for this component.
         val elements = cachedElements ?: buildList {
-            DOMBuilder<HTMLElement>(this@CachedComponent).onFinalize { element, partial ->
+            DOMBuilder(this@CachedComponent).onFinalize { element, partial ->
                 if (!partial) add(element)
             }.render()
-        }
+        }.also { cachedElements = it } // Cache it after rendering.
 
         // Actually render to dom.
         elements.forEach(boundNode::appendChild)

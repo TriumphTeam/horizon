@@ -13,7 +13,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
 import org.w3c.dom.asList
 
-public class DOMBuilder<out R : HTMLElement> internal constructor(private val parent: Component) :
+public class DOMBuilder internal constructor(private val parent: Component) :
     TagConsumer<HTMLElement> {
 
     private companion object {
@@ -128,9 +128,9 @@ public class DOMBuilder<out R : HTMLElement> internal constructor(private val pa
         lastLeaved?.asR() ?: throw IllegalStateException("We can't finalize as there was no tags")
 
     @Suppress("UnsafeCastFromDynamic")
-    private fun HTMLElement.asR(): R = this.asDynamic()
+    private fun HTMLElement.asR(): HTMLElement = this.asDynamic()
 
-    private inline fun HTMLElement.setEvent(name: String, noinline callback : (Event) -> Unit) {
+    private inline fun HTMLElement.setEvent(name: String, noinline callback: (Event) -> Unit) {
         asDynamic()[name] = callback
     }
 }
