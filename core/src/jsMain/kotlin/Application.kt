@@ -29,15 +29,8 @@ public object Application {
     }
 
     public fun goTo(path: String) {
-        val currentPath = window.location.pathname
-        val segments = currentPath.split("/").filter { it.isNotEmpty() }
-        val newPath = if (segments.isEmpty()) {
-            path
-        } else {
-            "/${segments.dropLast(1).joinToString("/")}$path"
-        }
-        // TODO CLEAN UP
-        router.navigateTo(newPath)
+        println("Going to $path")
+        router.navigateTo(path)
     }
 
     public fun index(block: FunctionalComponent.() -> Unit) {
@@ -51,12 +44,6 @@ public object Application {
                 action = RoutedComponentRouteAction(serializer<T>(), block),
             )
         )
-        // TODO, move this
-        /*CachedComponent(
-            parent = EmptyComponent,
-            boundNode = rootElement,
-            render = SimpleFunctionalComponent().apply(block).getComponentRender(),
-        ).render()*/
     }
 
     /*public inline fun <reified T> routes(block: NestedRoute.(T) -> Unit) {

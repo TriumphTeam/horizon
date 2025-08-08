@@ -1,10 +1,11 @@
 package dev.triumphteam.horizon.router
 
-import dev.triumphteam.horizon.component.CachedComponent
+import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.EmptyComponent
 import dev.triumphteam.horizon.component.FunctionalComponent
 import dev.triumphteam.horizon.component.SimpleFunctionalComponent
+import dev.triumphteam.horizon.state.AbstractMutableState
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.serialization.KSerializer
@@ -109,14 +110,28 @@ internal class Router(private val rootElement: Element) {
         val functionalComponent = SimpleFunctionalComponent()
         action.block.invoke(functionalComponent, routeObject.asDynamic())
 
+        val states = functionalComponent.getStates()
+
+        val component = ReactiveComponent(
+            parent = EmptyComponent,
+            boundNode = rootElement,
+            render = functionalComponent.getComponentRender(),
+            states = states,
+        )
+
+        states.forEach { state ->
+            if (state is AbstractMutableState) {
+                state.addListener(component) {
+                    component.cleanUpDom()
+                    component.renderToDom()
+                }
+            }
+        }
+
         return DecodedRoute(
             route = route,
             routeObject = routeObject,
-            component = CachedComponent(
-                parent = EmptyComponent,
-                boundNode = rootElement,
-                render = functionalComponent.getComponentRender(),
-            ),
+            component = component,
         )
     }
 

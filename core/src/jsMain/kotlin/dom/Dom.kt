@@ -1,8 +1,10 @@
 package dev.triumphteam.horizon.dom
 
-import dev.triumphteam.horizon.component.CachedComponent
+import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.ComponentTag
+import dev.triumphteam.horizon.component.EmptyComponent.render
+import dev.triumphteam.horizon.state.AbstractMutableState
 import kotlinx.html.DefaultUnsafe
 import kotlinx.html.Entities
 import kotlinx.html.Tag
@@ -13,7 +15,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
 import org.w3c.dom.asList
 
-public class DOMBuilder internal constructor(private val parent: Component) :
+internal class DOMBuilder internal constructor(private val parent: Component) :
     TagConsumer<HTMLElement> {
 
     private companion object {
@@ -24,17 +26,28 @@ public class DOMBuilder internal constructor(private val parent: Component) :
     private var lastLeaved: HTMLElement? = null
 
     override fun onTagStart(tag: Tag) {
-
         if (tag is ComponentTag) {
             val last = path.lastOrNull() ?: return
 
-            CachedComponent(
+            val states = tag.functionalComponent.getStates()
+
+            val component = ReactiveComponent(
                 parent = parent,
                 boundNode = last,
                 render = tag.functionalComponent.getComponentRender(),
-            ).render()
-            // TODO, the rest, and reactivity
+                states = states,
+            )
 
+            states.forEach { state ->
+                if (state is AbstractMutableState) {
+                    state.addListener(component) {
+                        component.cleanUpDom()
+                        component.renderToDom()
+                    }
+                }
+            }
+
+            component.render()
             return
         }
 

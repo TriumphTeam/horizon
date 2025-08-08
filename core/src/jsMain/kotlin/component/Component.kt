@@ -1,24 +1,29 @@
 package dev.triumphteam.horizon.component
 
 import dev.triumphteam.horizon.dom.DOMBuilder
-import kotlinx.browser.document
-import kotlinx.dom.clear
+import dev.triumphteam.horizon.state.AbstractMutableState
+import dev.triumphteam.horizon.state.MutableState
+import dev.triumphteam.horizon.state.SimpleMutableState
 import kotlinx.html.HtmlTagMarker
 import kotlinx.html.Tag
 import kotlinx.html.TagConsumer
 import kotlinx.html.consumers.onFinalize
-import kotlinx.html.dom.createTree
 import kotlinx.html.visitAndFinalize
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
 
 internal typealias ComponentRender = TagConsumer<HTMLElement>.() -> Unit
 
+@PublishedApi
 internal interface Component {
 
     fun unmount()
 
     fun render()
+
+    fun cleanUpDom()
+
+    fun renderToDom()
 
     fun addRenderedChild(component: Component)
 }
@@ -27,17 +32,20 @@ internal interface Component {
 internal object EmptyComponent : Component {
     override fun unmount() {}
     override fun render() {}
+    override fun cleanUpDom() {}
+    override fun renderToDom() {}
     override fun addRenderedChild(component: Component) {}
 }
 
 @PublishedApi
-internal class CachedComponent(
+internal class ReactiveComponent(
     private val parent: Component,
     private val boundNode: Node,
     private val render: ComponentRender,
+    private val states: List<MutableState<*>>,
 ) : Component {
 
-    private var cachedElements: List<HTMLElement>? = null
+    private var renderedElements: List<HTMLElement>? = null
     private val rendered: MutableList<Component> = mutableListOf()
 
     override fun unmount() {
@@ -45,23 +53,37 @@ internal class CachedComponent(
         rendered.forEach(Component::unmount)
         // Then the list of previously rendered components.
         rendered.clear()
+        // Clean up the states.
+        states.forEach { state ->
+            if (state is AbstractMutableState) {
+                state.removeListener(this)
+            }
+        }
         // Then remove itself from the dom.
-        cachedElements?.forEach(boundNode::removeChild)
+        cleanUpDom()
+    }
+
+    override fun cleanUpDom() {
+        renderedElements?.forEach(boundNode::removeChild)
+        renderedElements = null
     }
 
     override fun render() {
+        renderToDom()
+        // Tell the parent that this component has been rendered.
+        parent.addRenderedChild(this)
+    }
+
+    override fun renderToDom() {
         // Create elements for this component.
-        val elements = cachedElements ?: buildList {
-            DOMBuilder(this@CachedComponent).onFinalize { element, partial ->
+        val elements = renderedElements ?: buildList {
+            DOMBuilder(this@ReactiveComponent).onFinalize { element, partial ->
                 if (!partial) add(element)
             }.render()
-        }.also { cachedElements = it } // Cache it after rendering.
+        }.also { renderedElements = it } // Cache it after rendering.
 
         // Actually render to dom.
         elements.forEach(boundNode::appendChild)
-
-        // Tell the parent that this component has been rendered.
-        parent.addRenderedChild(this)
     }
 
     override fun addRenderedChild(component: Component) {
@@ -71,7 +93,7 @@ internal class CachedComponent(
 
 public interface FunctionalComponent {
 
-    // public fun <T> remember(initialValue: T): MutableState<T>
+    public fun <T> remember(initialValue: T): MutableState<T>
 
     public fun render(block: TagConsumer<HTMLElement>.() -> Unit)
 }
@@ -80,15 +102,18 @@ public interface FunctionalComponent {
 internal class SimpleFunctionalComponent : FunctionalComponent {
 
     private var render: ComponentRender? = null
-    // private val states = mutableListOf<MutableState<*>>()
+    private val states = mutableListOf<MutableState<*>>()
 
-    /*override fun <T> remember(initialValue: T): MutableState<T> {
-        return SimpleState(initialValue).also(states::add)
-    }*/
+    override fun <T> remember(initialValue: T): MutableState<T> {
+        return SimpleMutableState(initialValue).also(states::add)
+    }
 
     override fun render(block: ComponentRender) {
         this.render = block
     }
+
+    @PublishedApi
+    internal fun getStates(): List<MutableState<*>> = states.toList()
 
     @PublishedApi
     internal fun getComponentRender(): ComponentRender = render ?: {}

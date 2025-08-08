@@ -1,10 +1,15 @@
 package dev.triumphteam.horizon
 
 import dev.triumphteam.horizon.annotation.Route
+import dev.triumphteam.horizon.component.component
+import dev.triumphteam.horizon.router.navigate
 import kotlinx.browser.window
 import kotlinx.html.a
+import kotlinx.html.button
 import kotlinx.html.div
 import kotlinx.html.js.br
+import kotlinx.html.js.link
+import kotlinx.html.js.nav
 import kotlinx.html.js.onClickFunction
 
 public suspend fun main() {
@@ -20,15 +25,8 @@ public suspend fun main() {
                     }
                 }
 
-                a {
-                    href = "/example2"
-                    +"Go to example 2!"
-
-                    onClickFunction = { event ->
-                        event.preventDefault()
-                        println("Uh")
-                        Application.goTo("/example2")
-                    }
+                navigate(to = "/example2") {
+                    text("Example 2!")
                 }
             }
         }
@@ -42,15 +40,12 @@ public suspend fun main() {
                     }
                 }
 
-                a {
-                    href = "/example"
-                    +"Go to example!"
-
-                    onClickFunction = { event ->
-                        event.preventDefault()
-                        println("Uh")
-                        Application.goTo("/example")
-                    }
+                navigate(to = "/example") {
+                    text("Example!")
+                }
+                br()
+                navigate(to = "/with-variable/example") {
+                    text("Example with variable!")
                 }
             }
         }
@@ -61,25 +56,31 @@ public suspend fun main() {
                     +"You are on route with variable: ${route.variable}"
                 }
 
-                a {
-                    href = "/example"
-                    +"Go to variable: example!"
-
-                    onClickFunction = { event ->
-                        event.preventDefault()
-                        println("Uh")
-                        Application.goTo("/example")
-                    }
+                navigate(to = "../example") {
+                    text("Example!")
                 }
                 br()
+                navigate(to = "../another") {
+                    text("Another!")
+                }
                 a {
-                    href = "/example"
-                    +"Go to variable: another!"
+                    href = "#example"
+                    text("Example!")
+                }
+                div {
+                    component {
 
-                    onClickFunction = { event ->
-                        event.preventDefault()
-                        println("Uh")
-                        Application.goTo("/another")
+                        var clicks by remember(0)
+
+                        render {
+                            div {
+                                text("Clicks: $clicks")
+                            }
+                            button {
+                                onClickFunction = { clicks++ }
+                                text("Click me!")
+                            }
+                        }
                     }
                 }
             }
