@@ -1,13 +1,12 @@
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
-
 plugins {
-    id("horizon.base")
+    id("horizon.vite")
+    // id("dev.opensavvy.vite.kotlin") version "0.7.1"
 }
 
 kotlin {
     kotlin {
         js(IR) {
-            browser {
+            /*browser {
                 commonWebpackConfig {
                     devServer = KotlinWebpackConfig.DevServer(
                         open = false,
@@ -17,7 +16,9 @@ kotlin {
                 }
             }
             binaries.executable()
-            nodejs()
+            nodejs()*/
+            browser()
+            binaries.executable()
         }
     }
 

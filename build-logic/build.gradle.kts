@@ -12,5 +12,7 @@ dependencies {
     // Bundled plugins
     implementation(libs.bundles.build)
 
+    implementation("dev.opensavvy.gradle.vite:vite-kotlin:0.7.1")
+
     root("0.0.31")
 }

@@ -7,6 +7,7 @@ dependencyResolutionManagement {
 
 pluginManagement {
     repositories {
+        mavenCentral()
         gradlePluginPortal()
         maven("https://repo.triumphteam.dev/releases")
     }
