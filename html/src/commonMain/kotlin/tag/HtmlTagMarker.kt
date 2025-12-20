@@ -1,0 +1,4 @@
+package dev.triumphteam.horizon.html.tag
+
+@DslMarker
+public annotation class HtmlTagMarker

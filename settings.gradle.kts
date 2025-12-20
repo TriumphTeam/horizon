@@ -18,11 +18,13 @@ rootProject.name = "horizon"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 plugins {
-    id("dev.triumphteam.root.settings") version "0.0.31"
+    id("dev.triumphteam.root.settings") version "0.0.38"
 }
 
 projects {
     single(id = "core")
+    single(id = "html")
+    single(id = "vite")
 
     single(id = "testing")
 }

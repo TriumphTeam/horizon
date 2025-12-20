@@ -6,10 +6,9 @@ import dev.triumphteam.horizon.router.navigate
 import kotlinx.browser.window
 import kotlinx.html.a
 import kotlinx.html.button
+import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.js.br
-import kotlinx.html.js.link
-import kotlinx.html.js.nav
 import kotlinx.html.js.onClickFunction
 
 public suspend fun main() {
@@ -38,6 +37,12 @@ public suspend fun main() {
                     onClickFunction = { event ->
                         window.alert("Kotlin!")
                     }
+
+                    div {
+
+                    }
+
+                    classes = setOf("test")
                 }
 
                 navigate(to = "/example") {

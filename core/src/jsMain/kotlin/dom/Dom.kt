@@ -1,9 +1,8 @@
 package dev.triumphteam.horizon.dom
 
-import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.ComponentTag
-import dev.triumphteam.horizon.component.EmptyComponent.render
+import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.state.AbstractMutableState
 import kotlinx.html.DefaultUnsafe
 import kotlinx.html.Entities

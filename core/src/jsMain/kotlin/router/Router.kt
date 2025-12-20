@@ -136,7 +136,7 @@ internal class Router(private val rootElement: Element) {
     }
 
     private fun matchRoute(pathSegments: List<String>, route: Route): Boolean {
-        // To make sure we allow the path segments to be smaller than the url only when it has optionals.
+        // To make sure, we allow the path segments to be smaller than the url only when it has optionals.
         val routeSegments = route.segments.filter { it.type != SegmentType.VARIABLE_OPTIONAL }
 
         if (pathSegments.size < routeSegments.size) {
