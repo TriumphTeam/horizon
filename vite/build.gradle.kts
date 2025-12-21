@@ -4,4 +4,6 @@ plugins {
 
 dependencies {
     compileOnly(libs.build.kotlin.multiplatform)
+
+    implementation(projects.horizonHtml)
 }

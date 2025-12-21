@@ -1,7 +1,7 @@
 package dev.triumphteam.horizon.html
 
+import dev.triumphteam.horizon.html.tag.HtmlElement
 import dev.triumphteam.horizon.html.tag.HtmlTag
-import dev.triumphteam.horizon.html.tag.HtmlTagElement
 import dev.triumphteam.horizon.html.tag.createElement
 import java.util.LinkedList
 
@@ -13,13 +13,15 @@ public actual interface TagRenderer : TagVisitor {
     public fun onTagEvent(tag: HtmlTag, event: String, function: String)
 }
 
-public class HtmlStringRenderer(
-    public val prettyPrint: Boolean = false,
-) : TagRenderer {
+public inline fun createHtml(block: TagRenderer.() -> Unit): HtmlDocument {
+    return HtmlRenderer().apply(block).renderDocument()
+}
 
-    private val path: MutableList<HtmlTagElement> = LinkedList()
+@PublishedApi
+internal class HtmlRenderer : TagRenderer {
 
     override val renderer: TagRenderer = this
+    private val path: MutableList<HtmlElement> = LinkedList()
 
     override fun onStart(tag: HtmlTag) {
         val element = createElement(tag.tagName, tag.isVoid)
@@ -77,13 +79,29 @@ public class HtmlStringRenderer(
 
     }
 
+    @PublishedApi
+    internal fun renderDocument(): HtmlDocument {
+        require(path.size == 1) { "Document should only have one root element." }
+        val first = path.first()
+        if (first.tagName != "html") error("Document should have root element of type html.")
+        return HtmlDocument(first)
+    }
+
+    private fun last(): HtmlElement = path.lastOrNull() ?: error("No current tag in the renderer.")
+}
+
+internal class HtmlStringRenderer(
+    private val prettyPrint: Boolean = false,
+    private val document: HtmlDocument,
+) {
+
     internal fun render(): String = buildString {
-        path.forEach {
+        document.content.children.forEach {
             appendElement(0, it)
         }
     }
 
-    private fun StringBuilder.appendElement(indentation: Int, element: HtmlTagElement) {
+    private fun StringBuilder.appendElement(indentation: Int, element: HtmlElement) {
         val mainIndentation = " ".repeat(indentation)
         val contentIndentation = " ".repeat(indentation + 2)
 
@@ -129,8 +147,6 @@ public class HtmlStringRenderer(
 
         appendLine("$mainIndentation</${element.tagName}>")
     }
-
-    private fun last(): HtmlTagElement = path.lastOrNull() ?: error("No current tag in the renderer.")
 }
 
 private fun CharSequence.escapeHtml(): String = this.toString()
