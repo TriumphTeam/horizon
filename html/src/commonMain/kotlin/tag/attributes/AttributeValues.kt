@@ -29,3 +29,8 @@ public enum class Preload(public val value: String) {
     METADATA("metadata"),
     AUTO("auto");
 }
+
+public enum class CrossOrigin(public val value: String) {
+    ANONYMOUS("anonymous"),
+    USE_CREDENTIALS("use-credentials");
+}

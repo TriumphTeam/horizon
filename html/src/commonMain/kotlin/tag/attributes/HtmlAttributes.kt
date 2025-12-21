@@ -142,6 +142,9 @@ public object HtmlAttributes {
     /** <a>, <area>, <link> */
     public const val HREF_LANG: String = "hreflang"
 
+    /** <link> <script> */
+    public const val CROSS_ORIGIN: String = "crossorigin"
+
     /** <td>, <th> */
     public const val COLSPAN: String = "colspan"
 
@@ -300,4 +303,7 @@ public object HtmlAttributes {
 
     /** <a> */
     public const val REFERRER_POLICY: String = "referrerpolicy"
+
+    /** <link> */
+    public const val INTEGRITY: String = "integrity"
 }

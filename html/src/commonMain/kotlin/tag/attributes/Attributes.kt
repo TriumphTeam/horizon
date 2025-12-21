@@ -2,7 +2,11 @@ package dev.triumphteam.horizon.html.tag.attributes
 
 import dev.triumphteam.horizon.html.tag.ATag
 import dev.triumphteam.horizon.html.tag.AreaTag
+import dev.triumphteam.horizon.html.tag.BlockQuoteTag
 import dev.triumphteam.horizon.html.tag.HtmlTag
+import dev.triumphteam.horizon.html.tag.MetaTag
+import dev.triumphteam.horizon.html.tag.OlTag
+import dev.triumphteam.horizon.html.tag.ScriptTag
 
 public inline var HtmlTag.className: String?
     get() = attributes[HtmlAttributes.CLASS]
@@ -20,17 +24,17 @@ public inline var HtmlTag.dir: String?
     get() = attributes[HtmlAttributes.DIR]
     set(value) = setAttribute(HtmlAttributes.DIR, value)
 
-public inline var HtmlTag.draggable: String?
-    get() = attributes[HtmlAttributes.DRAGGABLE]
-    set(value) = setAttribute(HtmlAttributes.DRAGGABLE, value)
+public inline var HtmlTag.draggable: Boolean?
+    get() = attributes[HtmlAttributes.DRAGGABLE]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.DRAGGABLE, value?.toString())
 
 public inline var HtmlTag.enterKeyHint: String?
     get() = attributes[HtmlAttributes.ENTER_KEY_HINT]
     set(value) = setAttribute(HtmlAttributes.ENTER_KEY_HINT, value)
 
-public inline var HtmlTag.hidden: String?
-    get() = attributes[HtmlAttributes.HIDDEN]
-    set(value) = setAttribute(HtmlAttributes.HIDDEN, value)
+public inline var HtmlTag.hidden: Boolean?
+    get() = attributes[HtmlAttributes.HIDDEN]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.HIDDEN, value?.toString())
 
 public inline var HtmlTag.id: String?
     get() = attributes[HtmlAttributes.ID]
@@ -90,27 +94,35 @@ public inline var HtmlTagWithSrcAttribute.src: String?
     get() = attributes[HtmlAttributes.SRC]
     set(value) = setAttribute(HtmlAttributes.SRC, value)
 
-public interface HtmlTagWithFormedAttribute : HtmlTag
+public interface HtmlTagWithFormAttribute : HtmlTag
 
-public inline var HtmlTagWithFormedAttribute.form: String?
+public inline var HtmlTagWithFormAttribute.form: String?
     get() = attributes[HtmlAttributes.FORM]
     set(value) = setAttribute(HtmlAttributes.FORM, value)
 
 public interface HtmlTagWithDisabledAttribute : HtmlTag
 
-public inline var HtmlTagWithDisabledAttribute.disabled: String?
-    get() = attributes[HtmlAttributes.DISABLED]
-    set(value) = setAttribute(HtmlAttributes.DISABLED, value)
+public inline var HtmlTagWithDisabledAttribute.disabled: Boolean?
+    get() = attributes[HtmlAttributes.DISABLED]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.DISABLED, value?.toString())
 
 public interface HtmlTagWithHeightAttribute : HtmlTag
 
-public inline var HtmlTagWithHeightAttribute.height: String?
+public inline var HtmlTagWithHeightAttribute.height: Int?
+    get() = attributes[HtmlAttributes.HEIGHT]?.toIntOrNull()
+    set(value) = setAttribute(HtmlAttributes.HEIGHT, value?.toString())
+
+public inline var HtmlTagWithHeightAttribute.heightRaw: String?
     get() = attributes[HtmlAttributes.HEIGHT]
     set(value) = setAttribute(HtmlAttributes.HEIGHT, value)
 
 public interface HtmlTagWithWidthAttribute : HtmlTag
 
-public inline var HtmlTagWithWidthAttribute.width: String?
+public inline var HtmlTagWithWidthAttribute.width: Int?
+    get() = attributes[HtmlAttributes.WIDTH]?.toIntOrNull()
+    set(value) = setAttribute(HtmlAttributes.WIDTH, value?.toString())
+
+public inline var HtmlTagWithWidthAttribute.widthRaw: String?
     get() = attributes[HtmlAttributes.WIDTH]
     set(value) = setAttribute(HtmlAttributes.WIDTH, value)
 
@@ -150,15 +162,15 @@ public inline var HtmlTagWithTargetAttribute.targetRaw: String?
 
 public interface HtmlTagWithAutoFocusAttribute : HtmlTag
 
-public inline var HtmlTagWithAutoFocusAttribute.autoFocus: String?
-    get() = attributes[HtmlAttributes.AUTOFOCUS]
-    set(value) = setAttribute(HtmlAttributes.AUTOFOCUS, value)
+public inline var HtmlTagWithAutoFocusAttribute.autoFocus: Boolean?
+    get() = attributes[HtmlAttributes.AUTOFOCUS]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.AUTOFOCUS, value?.toString())
 
 public interface HtmlTagWithRequiredAttribute : HtmlTag
 
-public inline var HtmlTagWithRequiredAttribute.required: String?
-    get() = attributes[HtmlAttributes.REQUIRED]
-    set(value) = setAttribute(HtmlAttributes.REQUIRED, value)
+public inline var HtmlTagWithRequiredAttribute.required: Boolean?
+    get() = attributes[HtmlAttributes.REQUIRED]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.REQUIRED, value?.toString())
 
 public interface HtmlTagWithMaxAttribute : HtmlTag
 
@@ -232,9 +244,9 @@ public inline var HtmlTagWithPlaceholderAttribute.placeholder: String?
 
 public interface HtmlTagWithReadOnlyAttribute : HtmlTag
 
-public inline var HtmlTagWithReadOnlyAttribute.readOnly: String?
-    get() = attributes[HtmlAttributes.READONLY]
-    set(value) = setAttribute(HtmlAttributes.READONLY, value)
+public inline var HtmlTagWithReadOnlyAttribute.readOnly: Boolean?
+    get() = attributes[HtmlAttributes.READONLY]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.READONLY, value?.toString())
 
 public interface HtmlTagWithDownloadAttribute : HtmlTag
 
@@ -274,9 +286,9 @@ public inline var HtmlTagWithCharsetAttribute.charset: String?
 
 public interface HtmlTagWithAutocompleteAttribute : HtmlTag
 
-public inline var HtmlTagWithAutocompleteAttribute.autocomplete: String?
-    get() = attributes[HtmlAttributes.AUTOCOMPLETE]
-    set(value) = setAttribute(HtmlAttributes.AUTOCOMPLETE, value)
+public inline var HtmlTagWithAutocompleteAttribute.autocomplete: Boolean?
+    get() = attributes[HtmlAttributes.AUTOCOMPLETE]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.AUTOCOMPLETE, value?.toString())
 
 public interface HtmlTagWithFormActionAttribute : HtmlTag
 
@@ -350,6 +362,12 @@ public inline var HtmlTagWithReferrerPolicyAttribute.referrerPolicy: ReferrerPol
     get() = attributes[HtmlAttributes.REFERRER_POLICY]?.let { ReferrerPolicy.valueOf(it) }
     set(value) = setAttribute(HtmlAttributes.REFERRER_POLICY, value?.value)
 
+public interface HtmlTagWithCrossOriginAttribute : HtmlTag
+
+public inline var HtmlTagWithCrossOriginAttribute.crossOrigin: CrossOrigin?
+    get() = attributes[HtmlAttributes.CROSS_ORIGIN]?.let { CrossOrigin.valueOf(it) }
+    set(value) = setAttribute(HtmlAttributes.CROSS_ORIGIN, value?.value)
+
 public inline var ATag.ping: String?
     get() = attributes[HtmlAttributes.PING]
     set(value) = setAttribute(HtmlAttributes.PING, value)
@@ -366,6 +384,37 @@ public inline var AreaTag.shapeRaw: String?
     get() = attributes[HtmlAttributes.COORDS]
     set(value) = setAttribute(HtmlAttributes.COORDS, value)
 
+public inline var BlockQuoteTag.cite: String?
+    get() = attributes[HtmlAttributes.CITE]
+    set(value) = setAttribute(HtmlAttributes.CITE, value)
+
+public inline var MetaTag.content: String?
+    get() = attributes[HtmlAttributes.CONTENT]
+    set(value) = setAttribute(HtmlAttributes.CONTENT, value)
+
+public inline var MetaTag.httpEquiv: String?
+    get() = attributes[HtmlAttributes.HTTP_EQUIV]
+    set(value) = setAttribute(HtmlAttributes.HTTP_EQUIV, value)
+
+public inline var OlTag.reversed: String?
+    get() = attributes[HtmlAttributes.REVERSED]
+    set(value) = setAttribute(HtmlAttributes.REVERSED, value)
+
+public inline var OlTag.start: Int?
+    get() = attributes[HtmlAttributes.START]?.toIntOrNull()
+    set(value) = setAttribute(HtmlAttributes.START, value?.toString())
+
+public inline var ScriptTag.async: Boolean?
+    get() = attributes[HtmlAttributes.ASYNC]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.ASYNC, value?.toString())
+
+public inline var ScriptTag.defer: Boolean?
+    get() = attributes[HtmlAttributes.DEFER]?.toBoolean()
+    set(value) = setAttribute(HtmlAttributes.DEFER, value?.toString())
+
+public inline var ScriptTag.integrity: String?
+    get() = attributes[HtmlAttributes.INTEGRITY]
+    set(value) = setAttribute(HtmlAttributes.INTEGRITY, value)
 
 @PublishedApi
 internal fun HtmlTag.setAttribute(attribute: String, value: String?) {

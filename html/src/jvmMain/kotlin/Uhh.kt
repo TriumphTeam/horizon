@@ -7,6 +7,7 @@ import kotlinx.html.area
 import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.header
+import kotlinx.html.img
 import kotlinx.html.stream.createHTML
 
 public fun main() {
