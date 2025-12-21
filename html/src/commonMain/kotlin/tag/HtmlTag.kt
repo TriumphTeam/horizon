@@ -2,12 +2,12 @@
 
 package dev.triumphteam.horizon.html.tag
 
+import dev.triumphteam.horizon.html.TagRenderer
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithAltAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithAudioVideoAttributes
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithAutoFocusAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithAutocompleteAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithCharsetAttribute
-import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithColspanAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithCrossOriginAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithDirnameAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithDisabledAttribute
@@ -34,19 +34,18 @@ import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithTargetAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithTypeAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithValueAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithWidthAttribute
-import dev.triumphteam.horizon.html.visitor.TagVisitor
+import dev.triumphteam.horizon.html.TagVisitor
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 public interface HtmlTag : TagVisitor {
     public val tagName: String
-    public val isInline: Boolean
-    public val isEmpty: Boolean
+    public val isVoid: Boolean
 
     public val attributes: MutableMap<String, String>
 
     public fun text(text: String) {
-        renderer.onTagContent(this, text)
+        renderer.onContent(this, text)
     }
 }
 
@@ -54,8 +53,7 @@ public data class SimpleTag(
     override val tagName: String,
     override val renderer: TagRenderer,
     override val attributes: MutableMap<String, String>,
-    override val isInline: Boolean,
-    override val isEmpty: Boolean,
+    override val isVoid: Boolean,
 ) : HtmlTag
 
 public data class ATag(
@@ -65,8 +63,7 @@ public data class ATag(
     HtmlTagWithRelAttribute, HtmlTagWithTargetAttribute, HtmlTagWithTypeAttribute, HtmlTagWithReferrerPolicyAttribute {
 
     override val tagName: String = "a"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class AreaTag(
@@ -77,8 +74,7 @@ public data class AreaTag(
     HtmlTagWithReferrerPolicyAttribute {
 
     override val tagName: String = "area"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = true
 }
 
 public data class AudioTag(
@@ -87,8 +83,7 @@ public data class AudioTag(
 ) : HtmlTagWithAudioVideoAttributes, HtmlTagWithSrcAttribute {
 
     override val tagName: String = "audio"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class BaseTag(
@@ -97,8 +92,7 @@ public data class BaseTag(
 ) : HtmlTagWithHrefAttribute, HtmlTagWithTargetAttribute {
 
     override val tagName: String = "base"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = true
 }
 
 public data class BlockQuoteTag(
@@ -107,8 +101,7 @@ public data class BlockQuoteTag(
 ) : HtmlTag {
 
     override val tagName: String = "blockquote"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class ButtonTag(
@@ -118,8 +111,7 @@ public data class ButtonTag(
     HtmlTagWithFormActionAttribute, HtmlTagWithTypeAttribute, HtmlTagWithNameAttribute, HtmlTagWithValueAttribute {
 
     override val tagName: String = "button"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 
     // TODO: Some extra attributes.
 }
@@ -130,8 +122,7 @@ public data class CanvasTag(
 ) : HtmlTagWithWidthAttribute, HtmlTagWithHeightAttribute {
 
     override val tagName: String = "canvas"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class ImgTag(
@@ -141,8 +132,7 @@ public data class ImgTag(
     HtmlTagWithSizesAttribute, HtmlTagWithSrcAttribute {
 
     override val tagName: String = "img"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = true
 
     // TODO: Some extra attributes.
 }
@@ -157,8 +147,7 @@ public data class InputTag(
     HtmlTagWithSrcAttribute, HtmlTagWithTypeAttribute, HtmlTagWithValueAttribute {
 
     override val tagName: String = "input"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = true
 
     // TODO: Some extra attributes.
 }
@@ -169,8 +158,7 @@ public data class LabelTag(
 ) : HtmlTagWithForAttribute, HtmlTagWithFormAttribute {
 
     override val tagName: String = "label"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class LiTag(
@@ -179,8 +167,7 @@ public data class LiTag(
 ) : HtmlTagWithValueAttribute {
 
     override val tagName: String = "li"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class LinkTag(
@@ -190,8 +177,7 @@ public data class LinkTag(
     HtmlTagWithSizesAttribute, HtmlTagWithMediaAttribute, HtmlTagWithTypeAttribute, HtmlTagWithCrossOriginAttribute {
 
     override val tagName: String = "link"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = true
 
     // TODO: Some extra attributes.
 }
@@ -202,8 +188,7 @@ public data class MetaTag(
 ) : HtmlTagWithCharsetAttribute, HtmlTagWithNameAttribute {
 
     override val tagName: String = "meta"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = true
 }
 
 public data class OlTag(
@@ -212,8 +197,7 @@ public data class OlTag(
 ) : HtmlTagWithTypeAttribute {
 
     override val tagName: String = "ol"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class ScriptTag(
@@ -223,8 +207,7 @@ public data class ScriptTag(
     HtmlTagWithTypeAttribute {
 
     override val tagName: String = "script"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class StyleTag(
@@ -233,8 +216,7 @@ public data class StyleTag(
 ) : HtmlTagWithMediaAttribute, HtmlTagWithTypeAttribute {
 
     override val tagName: String = "style"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 }
 
 public data class TextAreaTag(
@@ -244,8 +226,7 @@ public data class TextAreaTag(
     HtmlTagWithPlaceholderAttribute, HtmlTagWithNameAttribute, HtmlTagWithReadOnlyAttribute {
 
     override val tagName: String = "textarea"
-    override val isInline: Boolean = false
-    override val isEmpty: Boolean = false
+    override val isVoid: Boolean = false
 
     // TODO: Some extra attributes.
 }
@@ -263,9 +244,9 @@ public inline fun <T : HtmlTag> T.visit(renderer: TagRenderer, crossinline block
 
 public inline fun <T : HtmlTag> T.visitTag(block: T.() -> Unit) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    renderer.onTagStart(this)
+    renderer.onStart(this)
     this.block()
-    renderer.onTagEnd(this)
+    renderer.onEnd(this)
 }
 
 @PublishedApi

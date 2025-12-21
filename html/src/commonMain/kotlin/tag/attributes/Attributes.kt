@@ -26,7 +26,7 @@ public inline var HtmlTag.dir: String?
 
 public inline var HtmlTag.draggable: Boolean?
     get() = attributes[HtmlAttributes.DRAGGABLE]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.DRAGGABLE, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.DRAGGABLE, value)
 
 public inline var HtmlTag.enterKeyHint: String?
     get() = attributes[HtmlAttributes.ENTER_KEY_HINT]
@@ -34,7 +34,7 @@ public inline var HtmlTag.enterKeyHint: String?
 
 public inline var HtmlTag.hidden: Boolean?
     get() = attributes[HtmlAttributes.HIDDEN]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.HIDDEN, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.HIDDEN, value)
 
 public inline var HtmlTag.id: String?
     get() = attributes[HtmlAttributes.ID]
@@ -104,7 +104,7 @@ public interface HtmlTagWithDisabledAttribute : HtmlTag
 
 public inline var HtmlTagWithDisabledAttribute.disabled: Boolean?
     get() = attributes[HtmlAttributes.DISABLED]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.DISABLED, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.DISABLED, value)
 
 public interface HtmlTagWithHeightAttribute : HtmlTag
 
@@ -164,13 +164,13 @@ public interface HtmlTagWithAutoFocusAttribute : HtmlTag
 
 public inline var HtmlTagWithAutoFocusAttribute.autoFocus: Boolean?
     get() = attributes[HtmlAttributes.AUTOFOCUS]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.AUTOFOCUS, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.AUTOFOCUS, value)
 
 public interface HtmlTagWithRequiredAttribute : HtmlTag
 
 public inline var HtmlTagWithRequiredAttribute.required: Boolean?
     get() = attributes[HtmlAttributes.REQUIRED]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.REQUIRED, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.REQUIRED, value)
 
 public interface HtmlTagWithMaxAttribute : HtmlTag
 
@@ -206,19 +206,19 @@ public interface HtmlTagWithAudioVideoAttributes : HtmlTag
 
 public inline var HtmlTagWithAudioVideoAttributes.autoplay: Boolean?
     get() = attributes[HtmlAttributes.AUTOPLAY]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.AUTOPLAY, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.AUTOPLAY, value)
 
 public inline var HtmlTagWithAudioVideoAttributes.controls: Boolean?
     get() = attributes[HtmlAttributes.CONTROLS]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.CONTROLS, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.CONTROLS, value)
 
 public inline var HtmlTagWithAudioVideoAttributes.loop: Boolean?
     get() = attributes[HtmlAttributes.LOOP]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.LOOP, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.LOOP, value)
 
 public inline var HtmlTagWithAudioVideoAttributes.muted: Boolean?
     get() = attributes[HtmlAttributes.MUTED]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.MUTED, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.MUTED, value)
 
 public inline var HtmlTagWithAudioVideoAttributes.preload: Preload?
     get() = attributes[HtmlAttributes.PRELOAD]?.let { Preload.valueOf(it) }
@@ -246,7 +246,7 @@ public interface HtmlTagWithReadOnlyAttribute : HtmlTag
 
 public inline var HtmlTagWithReadOnlyAttribute.readOnly: Boolean?
     get() = attributes[HtmlAttributes.READONLY]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.READONLY, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.READONLY, value)
 
 public interface HtmlTagWithDownloadAttribute : HtmlTag
 
@@ -288,7 +288,7 @@ public interface HtmlTagWithAutocompleteAttribute : HtmlTag
 
 public inline var HtmlTagWithAutocompleteAttribute.autocomplete: Boolean?
     get() = attributes[HtmlAttributes.AUTOCOMPLETE]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.AUTOCOMPLETE, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.AUTOCOMPLETE, value)
 
 public interface HtmlTagWithFormActionAttribute : HtmlTag
 
@@ -406,11 +406,11 @@ public inline var OlTag.start: Int?
 
 public inline var ScriptTag.async: Boolean?
     get() = attributes[HtmlAttributes.ASYNC]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.ASYNC, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.ASYNC, value)
 
 public inline var ScriptTag.defer: Boolean?
     get() = attributes[HtmlAttributes.DEFER]?.toBoolean()
-    set(value) = setAttribute(HtmlAttributes.DEFER, value?.toString())
+    set(value) = setAttribute(HtmlAttributes.DEFER, value)
 
 public inline var ScriptTag.integrity: String?
     get() = attributes[HtmlAttributes.INTEGRITY]
@@ -420,4 +420,10 @@ public inline var ScriptTag.integrity: String?
 internal fun HtmlTag.setAttribute(attribute: String, value: String?) {
     if (value == null) attributes.remove(attribute) else attributes[attribute] = value
     renderer.onAttribute(this, attribute, value)
+}
+
+@PublishedApi
+internal fun HtmlTag.setAttribute(attribute: String, value: Boolean?) {
+    if (value == null) attributes.remove(attribute) else attributes[attribute] = value.toString()
+    renderer.onAttribute(this, attribute, "")
 }

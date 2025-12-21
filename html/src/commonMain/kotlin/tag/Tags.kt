@@ -1,7 +1,7 @@
 package dev.triumphteam.horizon.html.tag
 
+import dev.triumphteam.horizon.html.TagVisitor
 import dev.triumphteam.horizon.html.tag.attributes.HtmlAttributes
-import dev.triumphteam.horizon.html.visitor.TagVisitor
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -29,22 +29,11 @@ public inline fun TagVisitor.a(
 public inline fun TagVisitor.abbr(
     id: String? = null,
     className: String? = null,
-    title: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    SimpleTag(
-        "abbr",
-        renderer = renderer,
-        attributes = attributes.withAttributes(
-            HtmlAttributes.ID to id,
-            HtmlAttributes.CLASS to className,
-            HtmlAttributes.TITLE to title,
-        ),
-        isInline = false,
-        isEmpty = false,
-    ).visit(renderer, block)
+    simpleTag("abbr", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -55,13 +44,7 @@ public inline fun TagVisitor.address(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    SimpleTag(
-        tagName = "address",
-        renderer = renderer,
-        attributes = attributes.withAttributes(HtmlAttributes.ID to id, HtmlAttributes.CLASS to className),
-        isInline = false,
-        isEmpty = false,
-    ).visit(renderer, block)
+    simpleTag("address", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -89,7 +72,7 @@ public inline fun TagVisitor.article(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("article", id, className, attributes, block)
+    simpleTag("article", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -100,7 +83,7 @@ public inline fun TagVisitor.aside(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("aside", id, className, attributes, block)
+    simpleTag("aside", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -130,7 +113,7 @@ public inline fun TagVisitor.b(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("b", id, className, attributes, block)
+    simpleTag("b", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -177,7 +160,7 @@ public inline fun TagVisitor.body(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("body", id, className, attributes, block)
+    simpleTag("body", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -188,7 +171,7 @@ public inline fun TagVisitor.br(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("br", id, className, attributes, block)
+    simpleTag("br", id, className, attributes, isVoid = true, block)
 }
 
 @HtmlTagMarker
@@ -237,7 +220,7 @@ public inline fun TagVisitor.code(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("code", id, className, attributes, block)
+    simpleTag("code", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -248,7 +231,7 @@ public inline fun TagVisitor.del(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("del", id, className, attributes, block)
+    simpleTag("del", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -259,7 +242,7 @@ public inline fun TagVisitor.div(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("div", id, className, attributes, block)
+    simpleTag("div", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -270,7 +253,7 @@ public inline fun TagVisitor.footer(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("footer", id, className, attributes, block)
+    simpleTag("footer", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -281,7 +264,7 @@ public inline fun TagVisitor.h1(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("h1", id, className, attributes, block)
+    simpleTag("h1", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -292,7 +275,7 @@ public inline fun TagVisitor.h2(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("h2", id, className, attributes, block)
+    simpleTag("h2", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -303,7 +286,7 @@ public inline fun TagVisitor.h3(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("h3", id, className, attributes, block)
+    simpleTag("h3", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -314,7 +297,7 @@ public inline fun TagVisitor.h4(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("h4", id, className, attributes, block)
+    simpleTag("h4", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -325,7 +308,7 @@ public inline fun TagVisitor.h5(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("h5", id, className, attributes, block)
+    simpleTag("h5", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -336,7 +319,7 @@ public inline fun TagVisitor.h6(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("h6", id, className, attributes, block)
+    simpleTag("h6", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -347,7 +330,7 @@ public inline fun TagVisitor.head(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("head", id, className, attributes, block)
+    simpleTag("head", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -358,7 +341,18 @@ public inline fun TagVisitor.html(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("html", id, className, attributes, block)
+    simpleTag("html", id, className, attributes, isVoid = false, block)
+}
+
+@HtmlTagMarker
+public inline fun TagVisitor.i(
+    id: String? = null,
+    className: String? = null,
+    attributes: MutableMap<String, String> = mutableMapOf(),
+    crossinline block: HtmlTag.() -> Unit = {},
+) {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    simpleTag("i", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -456,7 +450,7 @@ public inline fun TagVisitor.main(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("main", id, className, attributes, block)
+    simpleTag("main", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -484,7 +478,7 @@ public inline fun TagVisitor.nav(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("nav", id, className, attributes, block)
+    simpleTag("nav", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -495,7 +489,7 @@ public inline fun TagVisitor.noscript(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("noscript", id, className, attributes, block)
+    simpleTag("noscript", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -523,7 +517,7 @@ public inline fun TagVisitor.p(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("p", id, className, attributes, block)
+    simpleTag("p", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -534,7 +528,7 @@ public inline fun TagVisitor.pre(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("pre", id, className, attributes, block)
+    simpleTag("pre", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -545,7 +539,7 @@ public inline fun TagVisitor.s(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("s", id, className, attributes, block)
+    simpleTag("s", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -573,7 +567,7 @@ public inline fun TagVisitor.section(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("section", id, className, attributes, block)
+    simpleTag("section", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -584,7 +578,7 @@ public inline fun TagVisitor.small(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("small", id, className, attributes, block)
+    simpleTag("small", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -595,7 +589,7 @@ public inline fun TagVisitor.span(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("span", id, className, attributes, block)
+    simpleTag("span", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -606,7 +600,7 @@ public inline fun TagVisitor.strong(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("strong", id, className, attributes, block)
+    simpleTag("strong", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -634,7 +628,7 @@ public inline fun TagVisitor.sub(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("sub", id, className, attributes, block)
+    simpleTag("sub", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -645,7 +639,7 @@ public inline fun TagVisitor.sup(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("sup", id, className, attributes, block)
+    simpleTag("sup", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -656,7 +650,7 @@ public inline fun TagVisitor.table(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("table", id, className, attributes, block)
+    simpleTag("table", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -667,7 +661,7 @@ public inline fun TagVisitor.tbody(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("tbody", id, className, attributes, block)
+    simpleTag("tbody", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -695,7 +689,7 @@ public inline fun TagVisitor.tfoot(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("tfoot", id, className, attributes, block)
+    simpleTag("tfoot", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -706,7 +700,7 @@ public inline fun TagVisitor.thead(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("thead", id, className, attributes, block)
+    simpleTag("thead", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -717,7 +711,7 @@ public inline fun TagVisitor.title(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("title", id, className, attributes, block)
+    simpleTag("title", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -728,7 +722,7 @@ public inline fun TagVisitor.tr(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("tr", id, className, attributes, block)
+    simpleTag("tr", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -739,7 +733,7 @@ public inline fun TagVisitor.u(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("u", id, className, attributes, block)
+    simpleTag("u", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -750,7 +744,7 @@ public inline fun TagVisitor.ul(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("ul", id, className, attributes, block)
+    simpleTag("ul", id, className, attributes, isVoid = false, block)
 }
 
 @HtmlTagMarker
@@ -761,7 +755,7 @@ public inline fun TagVisitor.varTag(
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    simpleTag("var", id, className, attributes, block)
+    simpleTag("var", id, className, attributes, isVoid = false, block)
 }
 
 @PublishedApi
@@ -770,6 +764,7 @@ internal inline fun TagVisitor.simpleTag(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
+    isVoid: Boolean = false,
     crossinline block: HtmlTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
@@ -777,7 +772,6 @@ internal inline fun TagVisitor.simpleTag(
         tagName = tagName,
         renderer = renderer,
         attributes = attributes.withAttributes(HtmlAttributes.ID to id, HtmlAttributes.CLASS to className),
-        isInline = false,
-        isEmpty = false,
+        isVoid = isVoid,
     ).visit(renderer, block)
 }
