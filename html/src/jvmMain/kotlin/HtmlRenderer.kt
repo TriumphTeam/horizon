@@ -1,11 +1,10 @@
 package dev.triumphteam.horizon.html
 
 import dev.triumphteam.horizon.html.tag.HtmlElement
-import dev.triumphteam.horizon.html.tag.HtmlTag
 import dev.triumphteam.horizon.html.tag.createElement
 import java.util.LinkedList
 
-public actual interface TagRenderer : TagVisitor {
+public actual interface HtmlRenderer : HtmlVisitor {
     public actual fun onStart(tag: HtmlTag)
     public actual fun onEnd(tag: HtmlTag)
     public actual fun onContent(tag: HtmlTag, content: CharSequence)
@@ -13,14 +12,14 @@ public actual interface TagRenderer : TagVisitor {
     public fun onTagEvent(tag: HtmlTag, event: String, function: String)
 }
 
-public inline fun createHtml(block: TagRenderer.() -> Unit): HtmlDocument {
-    return HtmlRenderer().apply(block).renderDocument()
+public inline fun createHtml(block: HtmlVisitor.() -> Unit): HtmlDocument {
+    return HtmlDocumentRenderer().apply(block).renderDocument()
 }
 
 @PublishedApi
-internal class HtmlRenderer : TagRenderer {
+internal class HtmlDocumentRenderer : HtmlRenderer {
 
-    override val renderer: TagRenderer = this
+    override val renderer: HtmlRenderer = this
     private val path: MutableList<HtmlElement> = LinkedList()
 
     override fun onStart(tag: HtmlTag) {
@@ -46,7 +45,7 @@ internal class HtmlRenderer : TagRenderer {
         val last = last()
 
         if (last.tagName.lowercase() != tag.tagName.lowercase()) {
-            error("Wrong current tag: current -> ${last.tagName}, given -> ${tag.tagName}.")
+            error("Tried to set 'text()' for tag '${tag.tagName}' inside of '${last.tagName}', which is not allowed.")
         }
 
         last.setContent(content)

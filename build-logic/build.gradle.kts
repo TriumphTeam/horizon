@@ -2,7 +2,7 @@ import dev.triumphteam.root.root
 
 plugins {
     `kotlin-dsl`
-    id("dev.triumphteam.root.logic") version "0.0.38"
+    id("dev.triumphteam.root.logic") version "0.0.39"
 }
 
 dependencies {
@@ -12,5 +12,5 @@ dependencies {
     // Bundled plugins
     implementation(libs.bundles.build)
 
-    root("0.0.38")
+    root("0.0.39")
 }

@@ -7,6 +7,5 @@ public class HorizonVitePlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
 
-
     }
 }

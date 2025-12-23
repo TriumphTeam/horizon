@@ -1,13 +1,14 @@
 package dev.triumphteam.horizon.html.tag
 
-import dev.triumphteam.horizon.html.TagVisitor
+import dev.triumphteam.horizon.html.HtmlVisitor
+import dev.triumphteam.horizon.html.HtmlVisitorTag
 import dev.triumphteam.horizon.html.tag.attributes.HtmlAttributes
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 
-@HtmlTagMarker
-public inline fun TagVisitor.a(
+@HtmlMarker
+public inline fun HtmlVisitor.a(
     id: String? = null,
     className: String? = null,
     href: String? = null,
@@ -25,30 +26,30 @@ public inline fun TagVisitor.a(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.abbr(
+@HtmlMarker
+public inline fun HtmlVisitor.abbr(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("abbr", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.address(
+@HtmlMarker
+public inline fun HtmlVisitor.address(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("address", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.area(
+@HtmlMarker
+public inline fun HtmlVisitor.area(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -64,30 +65,30 @@ public inline fun TagVisitor.area(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.article(
+@HtmlMarker
+public inline fun HtmlVisitor.article(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("article", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.aside(
+@HtmlMarker
+public inline fun HtmlVisitor.aside(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("aside", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.audio(
+@HtmlMarker
+public inline fun HtmlVisitor.audio(
     id: String? = null,
     className: String? = null,
     src: String? = null,
@@ -105,19 +106,19 @@ public inline fun TagVisitor.audio(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.b(
+@HtmlMarker
+public inline fun HtmlVisitor.b(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("b", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.base(
+@HtmlMarker
+public inline fun HtmlVisitor.base(
     id: String? = null,
     className: String? = null,
     href: String? = null,
@@ -135,8 +136,8 @@ public inline fun TagVisitor.base(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.blockquote(
+@HtmlMarker
+public inline fun HtmlVisitor.blockquote(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -152,30 +153,30 @@ public inline fun TagVisitor.blockquote(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.body(
+@HtmlMarker
+public inline fun HtmlVisitor.body(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("body", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.br(
+@HtmlMarker
+public inline fun HtmlVisitor.br(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("br", id, className, attributes, isVoid = true, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.button(
+@HtmlMarker
+public inline fun HtmlVisitor.button(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -191,8 +192,8 @@ public inline fun TagVisitor.button(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.canvas(
+@HtmlMarker
+public inline fun HtmlVisitor.canvas(
     id: String? = null,
     className: String? = null,
     width: Int? = null,
@@ -212,156 +213,156 @@ public inline fun TagVisitor.canvas(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.code(
+@HtmlMarker
+public inline fun HtmlVisitor.code(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("code", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.del(
+@HtmlMarker
+public inline fun HtmlVisitor.del(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("del", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.div(
+@HtmlMarker
+public inline fun HtmlVisitor.div(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("div", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.footer(
+@HtmlMarker
+public inline fun HtmlVisitor.footer(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("footer", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.h1(
+@HtmlMarker
+public inline fun HtmlVisitor.h1(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("h1", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.h2(
+@HtmlMarker
+public inline fun HtmlVisitor.h2(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("h2", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.h3(
+@HtmlMarker
+public inline fun HtmlVisitor.h3(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("h3", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.h4(
+@HtmlMarker
+public inline fun HtmlVisitor.h4(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("h4", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.h5(
+@HtmlMarker
+public inline fun HtmlVisitor.h5(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("h5", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.h6(
+@HtmlMarker
+public inline fun HtmlVisitor.h6(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("h6", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.head(
+@HtmlMarker
+public inline fun HtmlVisitor.head(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("head", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.html(
+@HtmlMarker
+public inline fun HtmlVisitor.html(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("html", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.i(
+@HtmlMarker
+public inline fun HtmlVisitor.i(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("i", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.img(
+@HtmlMarker
+public inline fun HtmlVisitor.img(
     id: String? = null,
     className: String? = null,
     src: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: ImgTag.() -> Unit = {},
+    @HtmlMarker crossinline block: ImgTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     ImgTag(
@@ -374,8 +375,8 @@ public inline fun TagVisitor.img(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.input(
+@HtmlMarker
+public inline fun HtmlVisitor.input(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -391,8 +392,8 @@ public inline fun TagVisitor.input(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.label(
+@HtmlMarker
+public inline fun HtmlVisitor.label(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -408,8 +409,8 @@ public inline fun TagVisitor.label(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.li(
+@HtmlMarker
+public inline fun HtmlVisitor.li(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -425,8 +426,8 @@ public inline fun TagVisitor.li(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.link(
+@HtmlMarker
+public inline fun HtmlVisitor.link(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -442,19 +443,19 @@ public inline fun TagVisitor.link(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.main(
+@HtmlMarker
+public inline fun HtmlVisitor.main(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("main", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.meta(
+@HtmlMarker
+public inline fun HtmlVisitor.meta(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -470,30 +471,30 @@ public inline fun TagVisitor.meta(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.nav(
+@HtmlMarker
+public inline fun HtmlVisitor.nav(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("nav", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.noscript(
+@HtmlMarker
+public inline fun HtmlVisitor.noscript(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("noscript", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.ol(
+@HtmlMarker
+public inline fun HtmlVisitor.ol(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -509,41 +510,41 @@ public inline fun TagVisitor.ol(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.p(
+@HtmlMarker
+public inline fun HtmlVisitor.p(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("p", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.pre(
+@HtmlMarker
+public inline fun HtmlVisitor.pre(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("pre", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.s(
+@HtmlMarker
+public inline fun HtmlVisitor.s(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("s", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.script(
+@HtmlMarker
+public inline fun HtmlVisitor.script(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -559,52 +560,52 @@ public inline fun TagVisitor.script(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.section(
+@HtmlMarker
+public inline fun HtmlVisitor.section(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("section", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.small(
+@HtmlMarker
+public inline fun HtmlVisitor.small(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("small", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.span(
+@HtmlMarker
+public inline fun HtmlVisitor.span(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("span", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.strong(
+@HtmlMarker
+public inline fun HtmlVisitor.strong(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("strong", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.style(
+@HtmlMarker
+public inline fun HtmlVisitor.style(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -620,52 +621,52 @@ public inline fun TagVisitor.style(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.sub(
+@HtmlMarker
+public inline fun HtmlVisitor.sub(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("sub", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.sup(
+@HtmlMarker
+public inline fun HtmlVisitor.sup(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("sup", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.table(
+@HtmlMarker
+public inline fun HtmlVisitor.table(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("table", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.tbody(
+@HtmlMarker
+public inline fun HtmlVisitor.tbody(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("tbody", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.textarea(
+@HtmlMarker
+public inline fun HtmlVisitor.textarea(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
@@ -681,91 +682,91 @@ public inline fun TagVisitor.textarea(
     ).visit(renderer, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.tfoot(
+@HtmlMarker
+public inline fun HtmlVisitor.tfoot(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("tfoot", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.thead(
+@HtmlMarker
+public inline fun HtmlVisitor.thead(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("thead", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.title(
+@HtmlMarker
+public inline fun HtmlVisitor.title(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("title", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.tr(
+@HtmlMarker
+public inline fun HtmlVisitor.tr(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("tr", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.u(
+@HtmlMarker
+public inline fun HtmlVisitor.u(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("u", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.ul(
+@HtmlMarker
+public inline fun HtmlVisitor.ul(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("ul", id, className, attributes, isVoid = false, block)
 }
 
-@HtmlTagMarker
-public inline fun TagVisitor.varTag(
+@HtmlMarker
+public inline fun HtmlVisitor.varTag(
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("var", id, className, attributes, isVoid = false, block)
 }
 
 @PublishedApi
-internal inline fun TagVisitor.simpleTag(
+internal inline fun HtmlVisitor.simpleTag(
     tagName: String,
     id: String? = null,
     className: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     isVoid: Boolean = false,
-    crossinline block: HtmlTag.() -> Unit = {},
+    crossinline block: HtmlVisitorTag.() -> Unit = {},
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     SimpleTag(

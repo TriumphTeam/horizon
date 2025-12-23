@@ -1,9 +1,8 @@
 package dev.triumphteam.horizon.html
 
-import dev.triumphteam.horizon.html.tag.HtmlTag
 import org.w3c.dom.events.Event
 
-public actual interface TagRenderer : TagVisitor {
+public actual interface HtmlRenderer : HtmlVisitor {
     public actual fun onStart(tag: HtmlTag)
     public actual fun onEnd(tag: HtmlTag)
     public actual fun onContent(tag: HtmlTag, content: CharSequence)
