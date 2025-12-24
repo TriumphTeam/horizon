@@ -75,7 +75,7 @@ internal class HtmlDocumentRenderer : HtmlRenderer {
         event: String,
         function: String,
     ) {
-
+        onAttribute(tag, event, function)
     }
 
     @PublishedApi

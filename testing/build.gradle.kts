@@ -6,10 +6,8 @@ plugins {
 kotlin {
     kotlin {
         js(IR) {
+            browser()
             binaries.executable()
-            nodejs()
-            /*browser()
-            binaries.executable()*/
         }
     }
 
@@ -17,6 +15,7 @@ kotlin {
         jsMain {
             dependencies {
                 implementation(projects.horizonCore)
+                api("org.jetbrains.kotlinx:kotlinx-html-js:0.12.0")
             }
         }
     }

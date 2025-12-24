@@ -8,7 +8,11 @@ import dev.triumphteam.horizon.html.tag.img
 import dev.triumphteam.horizon.html.tag.input
 import dev.triumphteam.horizon.html.tag.link
 import dev.triumphteam.horizon.html.tag.title
+import kotlinx.html.HtmlTagMarker
+import kotlinx.html.Tag
+import kotlinx.html.TagConsumer
 import kotlinx.html.body
+import kotlinx.html.button
 import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.head
@@ -17,8 +21,13 @@ import kotlinx.html.img
 import kotlinx.html.input
 import kotlinx.html.lang
 import kotlinx.html.link
+import kotlinx.html.onClick
 import kotlinx.html.stream.createHTML
 import kotlinx.html.title
+import kotlinx.html.visitAndFinalize
+import org.w3c.dom.Node
+import org.w3c.dom.html.HTMLElement
+import kotlin.collections.forEach
 
 public fun main() {
 

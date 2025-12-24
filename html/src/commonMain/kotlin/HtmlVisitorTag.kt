@@ -6,3 +6,5 @@ public abstract class HtmlVisitorTag : HtmlScope(), HtmlVisitor {
         renderer.onContent(this, text)
     }
 }
+
+public abstract class CustomHtmlVisitorTag : HtmlVisitorTag(), CustomHtmlTag

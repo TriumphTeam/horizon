@@ -24,7 +24,6 @@ plugins {
 projects {
     single(id = "core")
     single(id = "html")
-    single(id = "vite")
 
     single(id = "testing")
 }

@@ -5,16 +5,17 @@ plugins {
 kotlin {
     kotlin {
         js(IR) {
-            browser()
-            binaries.executable()
+            nodejs()
+            binaries.library()
+            useEsModules()
         }
     }
 
     sourceSets {
         jsMain {
             dependencies {
+                api(projects.horizonHtml)
                 api(kotlin("stdlib-js"))
-                api("org.jetbrains.kotlinx:kotlinx-html-js:0.12.0")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
             }
         }

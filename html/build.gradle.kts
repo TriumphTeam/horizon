@@ -6,7 +6,9 @@ root {
     configureMultiplatform {
         js {
             target {
+                nodejs()
                 binaries.library()
+                useEsModules()
             }
         }
 

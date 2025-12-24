@@ -1,18 +1,18 @@
 package dev.triumphteam.horizon.component
 
-import dev.triumphteam.horizon.dom.DOMBuilder
+import dev.triumphteam.horizon.dom.createDomElements
+import dev.triumphteam.horizon.html.CustomHtmlVisitorTag
+import dev.triumphteam.horizon.html.HtmlRenderer
+import dev.triumphteam.horizon.html.HtmlVisitor
+import dev.triumphteam.horizon.html.tag.HtmlMarker
+import dev.triumphteam.horizon.html.tag.visit
 import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.MutableState
 import dev.triumphteam.horizon.state.SimpleMutableState
-import kotlinx.html.HtmlTagMarker
-import kotlinx.html.Tag
-import kotlinx.html.TagConsumer
-import kotlinx.html.consumers.onFinalize
-import kotlinx.html.visitAndFinalize
-import org.w3c.dom.HTMLElement
+import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-internal typealias ComponentRender = TagConsumer<HTMLElement>.() -> Unit
+internal typealias ComponentRender = HtmlVisitor.() -> Unit
 
 @PublishedApi
 internal interface Component {
@@ -45,7 +45,7 @@ internal class ReactiveComponent(
     private val states: List<MutableState<*>>,
 ) : Component {
 
-    private var renderedElements: List<HTMLElement>? = null
+    private var renderedElements: List<Element>? = null
     private val rendered: MutableList<Component> = mutableListOf()
 
     override fun unmount() {
@@ -76,11 +76,8 @@ internal class ReactiveComponent(
 
     override fun renderToDom() {
         // Create elements for this component.
-        val elements = renderedElements ?: buildList {
-            DOMBuilder(this@ReactiveComponent).onFinalize { element, partial ->
-                if (!partial) add(element)
-            }.render()
-        }.also { renderedElements = it } // Cache it after rendering.
+        val elements = renderedElements ?: createDomElements(this, render)
+            .also { renderedElements = it } // Cache it after rendering.
 
         // Actually render to dom.
         elements.forEach(boundNode::appendChild)
@@ -95,7 +92,8 @@ public interface FunctionalComponent {
 
     public fun <T> remember(initialValue: T): MutableState<T>
 
-    public fun render(block: TagConsumer<HTMLElement>.() -> Unit)
+    @HtmlMarker
+    public fun render(block: ComponentRender)
 }
 
 @PublishedApi
@@ -121,19 +119,16 @@ internal class SimpleFunctionalComponent : FunctionalComponent {
 
 @PublishedApi
 internal class ComponentTag(
-    override val consumer: TagConsumer<*>,
+    override val renderer: HtmlRenderer,
     internal val functionalComponent: SimpleFunctionalComponent,
-) : Tag {
-    override val attributes: MutableMap<String, String> = mutableMapOf()
-    override val attributesEntries: Collection<Map.Entry<String, String>> = attributes.entries
-    override val emptyTag: Boolean = true
-    override val inlineTag: Boolean = true
-    override val namespace: String? = null
+    override val attributes: MutableMap<String, String> = mutableMapOf(),
+) : CustomHtmlVisitorTag() {
     override val tagName: String = "component"
+    override val isVoid: Boolean = true
 }
 
-@HtmlTagMarker
-public inline fun <T, C : TagConsumer<T>> C.component(block: FunctionalComponent.() -> Unit) {
-    ComponentTag(this, SimpleFunctionalComponent().apply(block))
-        .visitAndFinalize(this) {}
+@HtmlMarker
+public inline fun HtmlVisitor.component(block: FunctionalComponent.() -> Unit) {
+    ComponentTag(renderer, SimpleFunctionalComponent().apply(block))
+        .visit(renderer) {}
 }

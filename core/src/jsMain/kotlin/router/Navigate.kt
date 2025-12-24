@@ -1,22 +1,11 @@
 package dev.triumphteam.horizon.router
 
 import dev.triumphteam.horizon.Application
-import kotlinx.html.A
-import kotlinx.html.HTMLTag
-import kotlinx.html.HtmlTagMarker
-import kotlinx.html.Tag
-import kotlinx.html.TagConsumer
-import kotlinx.html.attributesMapOf
-import kotlinx.html.visitAndFinalize
+import dev.triumphteam.horizon.html.HtmlVisitor
+import dev.triumphteam.horizon.html.tag.ATag
+import dev.triumphteam.horizon.html.tag.HtmlMarker
+import dev.triumphteam.horizon.html.tag.a
 import kotlinx.browser.window
-
-public interface Navigate : Tag
-
-@PublishedApi
-internal class NavigateTag(
-    initialAttributes: Map<String, String>,
-    override val consumer: TagConsumer<*>,
-) : HTMLTag("a", consumer, initialAttributes, null, true, false), Navigate
 
 @PublishedApi
 internal fun resolveRelativePath(to: String): String {
@@ -46,19 +35,15 @@ internal fun resolveRelativePath(to: String): String {
 
 }
 
-@HtmlTagMarker
-public inline fun <T, C : TagConsumer<T>> C.navigate(
-    to: String,
-    classes: String? = null,
-    crossinline block: Navigate.() -> Unit = {},
-): T {
+@HtmlMarker
+public inline fun HtmlVisitor.navigate(to: String, crossinline block: ATag.() -> Unit = {}) {
     val resolvedPath = resolveRelativePath(to)
-    return NavigateTag(attributesMapOf("href", resolvedPath, "class", classes), this)
-        .visitAndFinalize(this) {
-            consumer.onTagEvent(this, "onclick") { event ->
-                event.preventDefault()
-                Application.goTo(resolvedPath)
-            }
-            block()
+    a {
+        href = resolveRelativePath(to)
+        onClick = { event ->
+            event.preventDefault()
+            Application.goTo(resolvedPath)
         }
+        block()
+    }
 }

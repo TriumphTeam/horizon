@@ -9,3 +9,5 @@ public interface HtmlTag : HtmlRenderable {
     public val isVoid: Boolean
     public val attributes: MutableMap<String, String>
 }
+
+public interface CustomHtmlTag : HtmlTag
