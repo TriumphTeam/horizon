@@ -1,13 +1,9 @@
 package dev.triumphteam.horizon
 
-import dev.triumphteam.horizon.component.FunctionalComponent
-import dev.triumphteam.horizon.router.Route
-import dev.triumphteam.horizon.router.RoutedComponentRouteAction
+import dev.triumphteam.horizon.router.RouteBlock
 import dev.triumphteam.horizon.router.Router
-import dev.triumphteam.horizon.router.segments
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.serialization.serializer
 import org.w3c.dom.Element
 
 public object Application {
@@ -23,9 +19,12 @@ public object Application {
     internal val router: Router = Router(rootElement)
 
     init {
-        window.addEventListener("popstate", {
-            println("Changed url -> ${window.location.pathname}")
-        })
+        window.addEventListener(
+            "popstate",
+            {
+                println("Changed url -> ${window.location.pathname}")
+            },
+        )
     }
 
     public fun goTo(path: String) {
@@ -33,17 +32,12 @@ public object Application {
         router.navigateTo(path)
     }
 
-    public fun index(block: FunctionalComponent.() -> Unit) {
+    public fun index(block: RouteBlock) {
 
     }
 
-    public inline fun <reified T> route(noinline block: FunctionalComponent.(T) -> Unit) {
-        router.route(
-            Route(
-                segments = segments<T>(),
-                action = RoutedComponentRouteAction(serializer<T>(), block),
-            )
-        )
+    public fun route(path: String, block: RouteBlock) {
+        router.route(path, block)
     }
 
     /*public inline fun <reified T> routes(block: NestedRoute.(T) -> Unit) {

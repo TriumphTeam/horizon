@@ -8,4 +8,4 @@ import kotlinx.serialization.SerialInfo
 @MetaSerializable
 @OptIn(ExperimentalSerializationApi::class)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS)
-public annotation class Route(public val path: String)
+public annotation class RoutePath(public val path: String)

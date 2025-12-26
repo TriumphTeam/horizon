@@ -16,7 +16,6 @@ kotlin {
             dependencies {
                 api(projects.horizonHtml)
                 api(kotlin("stdlib-js"))
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
             }
         }
     }

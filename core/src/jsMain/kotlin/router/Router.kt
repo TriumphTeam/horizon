@@ -1,45 +1,32 @@
 package dev.triumphteam.horizon.router
 
-import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.EmptyComponent
-import dev.triumphteam.horizon.component.FunctionalComponent
-import dev.triumphteam.horizon.component.SimpleFunctionalComponent
-import dev.triumphteam.horizon.state.AbstractMutableState
+import dev.triumphteam.horizon.component.ReactiveComponent
+import dev.triumphteam.horizon.html.HtmlVisitor
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.serialization.KSerializer
 import org.w3c.dom.Element
 
-@PublishedApi
-internal sealed interface RouteAction
-
-@PublishedApi
-internal data class RoutedComponentRouteAction<T>(
-    internal val serializer: KSerializer<T>,
-    internal val block: FunctionalComponent.(T) -> Unit,
-) : RouteAction
-
-@PublishedApi
-internal data class NestedRouteAction(val component: () -> Unit) : RouteAction
+internal typealias RouteBlock = HtmlVisitor.() -> Unit
 
 @PublishedApi
 internal class Router(private val rootElement: Element) {
 
-    private var indexRoute: Route? = null
-    private var notFoundRoute: Route? = null
+    private var indexRoute: SegmentedRoute? = null
+    private var notFoundRoute: SegmentedRoute? = null
 
-    private val routes: MutableList<Route> = mutableListOf()
+    private val routes: MutableList<SegmentedRoute> = mutableListOf()
 
     @PublishedApi
     internal var currentRoute: DecodedRoute? = null
 
     @PublishedApi
-    internal fun route(route: Route) {
-        this.routes += route
+    internal fun route(path: String, block: RouteBlock) {
+        this.routes += createSegmentedRoute(path, block)
     }
 
-    internal fun navigateTo(path: String, routes: List<Route> = this.routes) {
+    internal fun navigateTo(path: String) {
         // Trim out leading and trailing characters.
         val trimmedPath = path.trim().removePrefix("/").removePrefix("/")
         val pathSegments = if (trimmedPath.isEmpty()) emptyList() else trimmedPath.split("/")
@@ -52,36 +39,50 @@ internal class Router(private val rootElement: Element) {
             return
         }
 
-        val route = routes.find { matchRoute(pathSegments, it) }
+        findAndHandleRoute(pathSegments)
+    }
 
-        if (route == null) {
+    private fun findAndHandleRoute(pathSegments: List<String>) {
+        println("Going to find route for path: $pathSegments")
+
+        fun findRoute(): ParsedRoute? {
+            routes.forEach { route ->
+                return tryParseRoute(route, pathSegments) ?: return@forEach
+            }
+
+            return null
+        }
+
+        val parsedRoute = findRoute()
+
+        if (parsedRoute == null) {
             println("No route found, using not found route, $notFoundRoute")
             // window.history.pushState(null, document.title, "/404")
             return
         }
 
-        handleRoute(route, pathSegments)
-    }
-
-    private fun handleRoute(route: Route, pathSegments: List<String>) {
-        val decodedRoute = when (val action = route.action) {
-            is RoutedComponentRouteAction<*> -> handleRoutedComponentRouteAction(
-                route = route,
-                action = action,
-                segments = pathSegments,
-            )
-
-            else -> error("Unsupported route action!")
-        }
+        // Found a matching route
 
         println("Going to check if routes are the same.")
 
         val currentRoute = this.currentRoute
-        if (currentRoute != null && currentRoute.route == route && currentRoute.routeObject == decodedRoute.routeObject) {
+        /*if (currentRoute != null && currentRoute.route == route) {
             // Found the same route, so we don't update anything.
             println("same route!!!")
             return
-        }
+        }*/
+
+        val decodedRoute = DecodedRoute(
+            route = parsedRoute.route,
+            component = ReactiveComponent(
+                parent = EmptyComponent,
+                boundNode = rootElement,
+                render = {
+                    parsedRoute.route.block.invoke(this)
+                },
+                states = emptyList(),
+            ),
+        )
 
         // Unmount current route so new one can take its place.
         currentRoute?.unmount()
@@ -93,63 +94,62 @@ internal class Router(private val rootElement: Element) {
         decodedRoute.render()
     }
 
-    private fun handleRoutedComponentRouteAction(
-        route: Route,
-        action: RoutedComponentRouteAction<*>,
+    private fun tryParseRoute(
+        route: SegmentedRoute,
         segments: List<String>,
-    ): DecodedRoute {
-        // We need to remove segments that aren't route variables.
-        val pathCount = route.segments.count { it.type == SegmentType.EXACT }
-        val leftOverSegments = segments.drop(pathCount)
+    ): ParsedRoute? {
 
-        // Then decode the route into its route object.
-        val routeObject = RouteDecoder(leftOverSegments).decodeSerializableValue(action.serializer)
-            ?: error("Failed to decode route data!")
+        val variables = mutableMapOf<String, String>()
+        val segmentIterator = route.segments.iterator()
 
-        // Invoke the component function.
-        val functionalComponent = SimpleFunctionalComponent()
-        action.block.invoke(functionalComponent, routeObject.asDynamic())
+        // This might need to change in the future if we allow "infinite" segments.
+        if (segments.size != route.segments.size) {
+            return null
+        }
 
-        val states = functionalComponent.getStates()
+        for (segment in segments) {
+            // If there are more segments than the route allows, it won't match, so just exit.
+            if (!segmentIterator.hasNext()) return null
 
-        val component = ReactiveComponent(
-            parent = EmptyComponent,
-            boundNode = rootElement,
-            render = functionalComponent.getComponentRender(),
-            states = states,
-        )
+            val routeSegment = segmentIterator.next()
 
-        states.forEach { state ->
-            if (state is AbstractMutableState) {
-                state.addListener(component) {
-                    component.cleanUpDom()
-                    component.renderToDom()
-                }
+            when (routeSegment.type) {
+                // If the exact doesn't match, we also know it won't match at all.
+                SegmentType.EXACT -> if (segment != routeSegment.name) return null
+                else -> variables[routeSegment.name] = segment
             }
         }
 
-        return DecodedRoute(
+        return ParsedRoute(
             route = route,
-            routeObject = routeObject,
-            component = component,
+            variables = variables,
         )
     }
 
-    private fun matchRoute(pathSegments: List<String>, route: Route): Boolean {
-        // To make sure, we allow the path segments to be smaller than the url only when it has optionals.
-        val routeSegments = route.segments.filter { it.type != SegmentType.VARIABLE_OPTIONAL }
+    private fun createSegmentedRoute(path: String, block: RouteBlock): SegmentedRoute {
+        return SegmentedRoute(
+            segments = path.trim('/')
+                .split("/")
+                .map { segment ->
+                    when {
+                        segment.startsWith(":") -> {
+                            val segmentName = segment.removePrefix(":")
+                            when {
+                                segmentName.endsWith("?") -> Segment(
+                                    name = segmentName.removeSuffix("?"),
+                                    type = SegmentType.VARIABLE_OPTIONAL,
+                                )
 
-        if (pathSegments.size < routeSegments.size) {
-            return false
-        }
+                                else -> Segment(name = segmentName, type = SegmentType.VARIABLE)
+                            }
+                        }
 
-        return pathSegments.zip(routeSegments).all { (urlSeg, routeSeg) ->
-            when (routeSeg.type) {
-                SegmentType.EXACT -> urlSeg == routeSeg.name
-                SegmentType.VARIABLE -> urlSeg.isNotEmpty()
-                else -> false
-            }
-        }
+                        else -> Segment(name = segment, type = SegmentType.EXACT)
+                    }
+                },
+            isIndex = false,
+            block = block,
+        )
     }
 }
 
@@ -163,15 +163,19 @@ public data class Segment(
 )
 
 @PublishedApi
-internal data class Route(
+internal data class SegmentedRoute(
     internal val segments: List<Segment>,
     internal val isIndex: Boolean = false,
-    internal val action: RouteAction,
+    internal val block: RouteBlock,
+)
+
+private data class ParsedRoute(
+    val route: SegmentedRoute,
+    val variables: Map<String, String>,
 )
 
 internal data class DecodedRoute(
-    internal val route: Route,
-    internal val routeObject: Any,
+    internal val route: SegmentedRoute,
     internal val component: Component,
 ) {
 

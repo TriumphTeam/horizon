@@ -1,90 +1,94 @@
 package dev.triumphteam.horizon
 
-import dev.triumphteam.horizon.annotation.Route
 import dev.triumphteam.horizon.component.component
 import dev.triumphteam.horizon.html.tag.a
 import dev.triumphteam.horizon.html.tag.br
 import dev.triumphteam.horizon.html.tag.button
 import dev.triumphteam.horizon.html.tag.div
-import dev.triumphteam.horizon.state.RouteVariable
+import dev.triumphteam.horizon.router.navigate
+import kotlinx.browser.window
 
-public suspend fun main() {
+public fun main() {
     app {
 
-        route<ExampleRoute> { route ->
-            render {
-                div {
-                    text("Rendering example route")
+        route("example") {
+            div {
+                text("Rendering example route")
 
-                    /*onClick {
-                        window.alert("Kotlin!")
-                    }*/
-                }
-
-                /*navigate(to = "/example2") {
-                    text("Example 2!")
+                /*onClick = {
+                    window.alert("Kotlin!")
                 }*/
+            }
+
+            navigate(to = "/example2") {
+                text("Example 2!")
             }
         }
 
-        route<ExampleRoute2> { route ->
-            render {
-                div {
-                    className = "test"
 
-                    text("Rendering example route 2")
-                    /*onClickFunction = { event ->
-                        window.alert("Kotlin!")
-                    }*/
+        route("example2") {
+            div {
+                className = "test"
 
-                    div {
+                text("Rendering example route 2")
 
-                    }
-                }
-
-                /*navigate(to = "/example") {
-                    text("Example!")
+                /*onClick = { event ->
+                    window.alert("Kotlin!")
                 }*/
-                br()
-                /*navigate(to = "/with-variable/example") {
-                    text("Example with variable!")
-                }*/
+            }
+
+            navigate(to = "/example") {
+                text("Example!")
+            }
+
+            br()
+
+            navigate(to = "/with-variable/example") {
+                text("Example with variable!")
             }
         }
 
-        route<RouteWithVariable> { route ->
-            render {
-                div {
-                    text("You are on route with variable: ${route.variable}")
-                }
+        route("with-variable/:variable") {
+            div {
+                text("You are on route with variable: ")
+            }
 
-                /*navigate(to = "../example") {
-                    text("Example!")
-                }*/
-                br()
-                /*navigate(to = "../another") {
-                    text("Another!")
-                }*/
-                a {
-                    href = "#example"
-                    text("Example!")
-                }
-                div {
-                    component {
+            br()
 
-                        var clicks by remember(0)
+            navigate(to = "../example") {
+                text("Example!")
+            }
 
-                        render {
-                            div {
-                                text("Clicks: $clicks")
+            br()
+
+            navigate(to = "../another") {
+                text("Another!")
+            }
+
+            br()
+
+            a {
+                href = "#example"
+                text("Example!")
+            }
+
+            br()
+
+            div {
+                component {
+
+                    var clicks by remember(0)
+
+                    render {
+                        div {
+                            text("Clicks: $clicks")
+                        }
+                        button {
+                            onClick = {
+                                println("clicked!!!")
+                                clicks++
                             }
-                            button {
-                                onClick = {
-                                    println("clicked!!!")
-                                    clicks++
-                                }
-                                text("Click me!")
-                            }
+                            text("Click me!")
                         }
                     }
                 }
@@ -98,11 +102,3 @@ public suspend fun main() {
     }
 }
 
-@Route("/example")
-public object ExampleRoute
-
-@Route("/example2")
-public object ExampleRoute2
-
-@Route("/with-variable")
-public data class RouteWithVariable(public val variable: RouteVariable)
