@@ -16,6 +16,7 @@ internal class DomRenderer(private val parent: Component) : AbstractDomHtmlRende
 
     override fun onCustomTagStart(tag: CustomHtmlTag, last: Element?) {
         if (tag !is ComponentTag) error("Tried to render unknown custom tag '${tag.tagName}'.")
+        // TODO: Figure this shit out, fuck
         if (last == null) error("Tried to component without a parent.")
 
         val states = tag.functionalComponent.getStates()
@@ -35,7 +36,7 @@ internal class DomRenderer(private val parent: Component) : AbstractDomHtmlRende
                 }
             }
         }
-        
+
         component.render()
     }
 

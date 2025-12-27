@@ -4,11 +4,13 @@ import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.EmptyComponent
 import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.html.HtmlVisitor
+import dev.triumphteam.horizon.state.SimpleMutableState
+import dev.triumphteam.horizon.state.State
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
 
-internal typealias RouteBlock = HtmlVisitor.() -> Unit
+internal typealias RouteBlock = HtmlVisitor.(Route) -> Unit
 
 @PublishedApi
 internal class Router(private val rootElement: Element) {
@@ -66,22 +68,26 @@ internal class Router(private val rootElement: Element) {
         println("Going to check if routes are the same.")
 
         val currentRoute = this.currentRoute
-        /*if (currentRoute != null && currentRoute.route == route) {
-            // Found the same route, so we don't update anything.
+
+        if (currentRoute != null && currentRoute.segmentedRoute == parsedRoute.route) {
             println("same route!!!")
+            currentRoute.route.updateVariables(parsedRoute.variables)
             return
-        }*/
+        }
+
+        val variablesRoute = SimpleRoute(parsedRoute.variables)
 
         val decodedRoute = DecodedRoute(
-            route = parsedRoute.route,
+            segmentedRoute = parsedRoute.route,
             component = ReactiveComponent(
                 parent = EmptyComponent,
                 boundNode = rootElement,
                 render = {
-                    parsedRoute.route.block.invoke(this)
+                    parsedRoute.route.block.invoke(this, variablesRoute)
                 },
                 states = emptyList(),
             ),
+            route = variablesRoute,
         )
 
         // Unmount current route so new one can take its place.
@@ -174,9 +180,10 @@ private data class ParsedRoute(
     val variables: Map<String, String>,
 )
 
-internal data class DecodedRoute(
-    internal val route: SegmentedRoute,
+internal class DecodedRoute(
+    internal val segmentedRoute: SegmentedRoute,
     internal val component: Component,
+    internal val route: SimpleRoute,
 ) {
 
     internal fun unmount() {
@@ -185,5 +192,34 @@ internal data class DecodedRoute(
 
     internal fun render() {
         component.render()
+    }
+}
+
+internal class SimpleRoute(variables: Map<String, String>) : Route {
+
+    private val variableStates = variables.mapValues { (name, value) ->
+        SimpleMutableState(value)
+    }
+
+    override fun get(name: String): State<String> {
+        return requireNotNull(variableStates[name]) {
+            "Could not find route variable with name: $name"
+        }
+    }
+
+    override fun getVariable(name: String): String {
+        return requireNotNull(variableStates[name]?.value) {
+            "Could not find route variable with name: $name"
+        }
+    }
+
+    override fun getVariableNullable(name: String): String? {
+        return variableStates[name]?.value
+    }
+
+    internal fun updateVariables(variables: Map<String, String>) {
+        variables.forEach { (name, newValue) ->
+            variableStates[name]?.setValue(newValue) ?: return@forEach
+        }
     }
 }

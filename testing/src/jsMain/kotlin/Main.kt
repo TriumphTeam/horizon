@@ -6,7 +6,8 @@ import dev.triumphteam.horizon.html.tag.br
 import dev.triumphteam.horizon.html.tag.button
 import dev.triumphteam.horizon.html.tag.div
 import dev.triumphteam.horizon.router.navigate
-import kotlinx.browser.window
+import kotlinx.html.Entities
+import kotlinx.html.InputType
 
 public fun main() {
     app {
@@ -48,9 +49,18 @@ public fun main() {
             }
         }
 
-        route("with-variable/:variable") {
+        route("with-variable/:variable") { route ->
             div {
-                text("You are on route with variable: ")
+                component {
+
+                    val variable by remember(route["variable"])
+
+                    render {
+                        div {
+                            text("You are on route with variable: $variable")
+                        }
+                    }
+                }
             }
 
             br()
@@ -74,24 +84,26 @@ public fun main() {
 
             br()
 
-            div {
-                component {
+            component {
 
-                    var clicks by remember(0)
+                var clicks by remember(0)
 
-                    render {
-                        div {
-                            text("Clicks: $clicks")
+                render {
+                    div {
+                        text("Clicks: $clicks")
+                    }
+                    button {
+                        onClick = {
+                            println("clicked!!!")
+                            clicks++
                         }
-                        button {
-                            onClick = {
-                                println("clicked!!!")
-                                clicks++
-                            }
-                            text("Click me!")
-                        }
+                        text("Click me!")
                     }
                 }
+            }
+
+            div {
+                text("buh")
             }
         }
 

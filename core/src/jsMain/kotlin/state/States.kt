@@ -1,11 +1,18 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package dev.triumphteam.horizon.state
 
 import dev.triumphteam.horizon.component.Component
 import kotlin.reflect.KProperty
 
-public interface MutableState<T> {
+public inline fun <T> mutableStateOf(initialValue: T): MutableState<T> = SimpleMutableState(initialValue)
+
+public interface State<T> {
 
     public operator fun getValue(thisRef: Any?, property: KProperty<*>): T
+}
+
+public interface MutableState<T> : State<T> {
 
     public operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
 }
@@ -32,13 +39,18 @@ public abstract class AbstractMutableState<T> : MutableState<T> {
 
 public open class SimpleMutableState<T>(initialValue: T) : AbstractMutableState<T>() {
 
-    protected var value: T = initialValue
+    internal var value: T = initialValue
+        private set
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return value
     }
 
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+        setValue(value)
+    }
+
+    internal fun setValue(value: T) {
         this.value = value
         update()
     }

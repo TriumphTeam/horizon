@@ -9,6 +9,7 @@ import dev.triumphteam.horizon.html.tag.visit
 import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.MutableState
 import dev.triumphteam.horizon.state.SimpleMutableState
+import dev.triumphteam.horizon.state.State
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
@@ -42,11 +43,13 @@ internal class ReactiveComponent(
     private val parent: Component,
     private val boundNode: Node,
     private val render: ComponentRender,
-    private val states: List<MutableState<*>>,
+    private val states: List<State<*>>,
 ) : Component {
 
     private var renderedElements: List<Element>? = null
     private val rendered: MutableList<Component> = mutableListOf()
+
+    private val lastElementAtCreation = boundNode.lastChild
 
     override fun unmount() {
         // Unmount child components.
@@ -79,8 +82,51 @@ internal class ReactiveComponent(
         val elements = renderedElements ?: createDomElements(this, render)
             .also { renderedElements = it } // Cache it after rendering.
 
-        // Actually render to dom.
-        elements.forEach(boundNode::appendChild)
+        // Scenario A
+        // - this
+        // - div
+        // - div
+
+        // Last element null
+        // Get the first element and insert before or append.
+
+        // Scenario B
+        // - div
+        // - this
+        // - div
+
+        // Last element div
+        // Find the element after and prepend or append.
+
+        // If this is null, it means we are the first element.
+        val lastElement = lastElementAtCreation
+        if (lastElement == null) {
+            // Check if a first child exists.
+            val firstElement = boundNode.firstChild
+
+            // If it doesn't, we append as if we're the only elements.
+            if (firstElement == null) {
+                elements.forEach(boundNode::appendChild)
+                return
+            }
+
+            // If we have a first element, we insert before it.
+            elements.forEach { element -> boundNode.insertBefore(element, firstElement) }
+            return
+        }
+
+        // Here we can assume we have a last element.
+        // So we get its next sibling.
+        val elementAfter = lastElement.nextSibling
+
+        // If no sibling exists, we append as if we're the last element.
+        if (elementAfter == null) {
+            elements.forEach(boundNode::appendChild)
+            return
+        }
+
+        // If we do have it, we insert before it.
+        elements.forEach { element -> boundNode.insertBefore(element, elementAfter) }
     }
 
     override fun addRenderedChild(component: Component) {
@@ -92,6 +138,8 @@ public interface FunctionalComponent {
 
     public fun <T> remember(initialValue: T): MutableState<T>
 
+    public fun <T> remember(state: State<T>): State<T>
+
     @HtmlMarker
     public fun render(block: ComponentRender)
 }
@@ -100,18 +148,20 @@ public interface FunctionalComponent {
 internal class SimpleFunctionalComponent : FunctionalComponent {
 
     private var render: ComponentRender? = null
-    private val states = mutableListOf<MutableState<*>>()
+    private val states = mutableListOf<State<*>>()
 
     override fun <T> remember(initialValue: T): MutableState<T> {
         return SimpleMutableState(initialValue).also(states::add)
     }
+
+    override fun <T> remember(state: State<T>): State<T> = state.also(states::add)
 
     override fun render(block: ComponentRender) {
         this.render = block
     }
 
     @PublishedApi
-    internal fun getStates(): List<MutableState<*>> = states.toList()
+    internal fun getStates(): List<State<*>> = states.toList()
 
     @PublishedApi
     internal fun getComponentRender(): ComponentRender = render ?: {}
