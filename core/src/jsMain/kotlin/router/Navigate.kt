@@ -1,7 +1,7 @@
 package dev.triumphteam.horizon.router
 
 import dev.triumphteam.horizon.Application
-import dev.triumphteam.horizon.html.HtmlVisitor
+import dev.triumphteam.horizon.html.HtmlConsumer
 import dev.triumphteam.horizon.html.tag.ATag
 import dev.triumphteam.horizon.html.tag.HtmlMarker
 import dev.triumphteam.horizon.html.tag.a
@@ -36,7 +36,7 @@ internal fun resolveRelativePath(to: String): String {
 }
 
 @HtmlMarker
-public inline fun HtmlVisitor.navigate(to: String, crossinline block: ATag.() -> Unit = {}) {
+public inline fun HtmlConsumer.navigate(to: String, crossinline block: ATag.() -> Unit = {}) {
     val resolvedPath = resolveRelativePath(to)
     a {
         href = resolveRelativePath(to)

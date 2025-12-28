@@ -1,6 +1,7 @@
 package dev.triumphteam.horizon.html
 
 public interface HtmlRenderable {
+    public val parentRenderer: HtmlRenderer
     public val renderer: HtmlRenderer
 }
 

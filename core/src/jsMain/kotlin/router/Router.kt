@@ -1,16 +1,15 @@
 package dev.triumphteam.horizon.router
 
 import dev.triumphteam.horizon.component.Component
-import dev.triumphteam.horizon.component.EmptyComponent
 import dev.triumphteam.horizon.component.ReactiveComponent
-import dev.triumphteam.horizon.html.HtmlVisitor
+import dev.triumphteam.horizon.html.HtmlConsumer
 import dev.triumphteam.horizon.state.SimpleMutableState
 import dev.triumphteam.horizon.state.State
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
 
-internal typealias RouteBlock = HtmlVisitor.(Route) -> Unit
+internal typealias RouteBlock = HtmlConsumer.(Route) -> Unit
 
 @PublishedApi
 internal class Router(private val rootElement: Element) {
@@ -80,7 +79,6 @@ internal class Router(private val rootElement: Element) {
         val decodedRoute = DecodedRoute(
             segmentedRoute = parsedRoute.route,
             component = ReactiveComponent(
-                parent = EmptyComponent,
                 boundNode = rootElement,
                 render = {
                     parsedRoute.route.block.invoke(this, variablesRoute)
@@ -191,7 +189,7 @@ internal class DecodedRoute(
     }
 
     internal fun render() {
-        component.render()
+        component.update()
     }
 }
 

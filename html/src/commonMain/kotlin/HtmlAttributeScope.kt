@@ -60,6 +60,8 @@ import dev.triumphteam.horizon.html.tag.attributes.setAttribute
 
 public abstract class HtmlAttributeScope : HtmlTag {
 
+    override val renderer: HtmlRenderer = parentRenderer
+
     public inline var HtmlTag.className: String?
         get() = attributes[HtmlAttributes.CLASS]
         set(value) = setAttribute(HtmlAttributes.CLASS, value)

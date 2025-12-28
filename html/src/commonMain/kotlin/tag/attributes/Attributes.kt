@@ -50,11 +50,11 @@ public interface HtmlTagWithCrossOriginAttribute : HtmlTag
 @PublishedApi
 internal fun HtmlTag.setAttribute(attribute: String, value: String?) {
     if (value == null) attributes.remove(attribute) else attributes[attribute] = value
-    renderer.onAttribute(this, attribute, value)
+    parentRenderer.onAttribute(this, attribute, value)
 }
 
 @PublishedApi
 internal fun HtmlTag.setAttribute(attribute: String, value: Boolean?) {
     if (value == null) attributes.remove(attribute) else attributes[attribute] = value.toString()
-    renderer.onAttribute(this, attribute, "")
+    parentRenderer.onAttribute(this, attribute, "")
 }

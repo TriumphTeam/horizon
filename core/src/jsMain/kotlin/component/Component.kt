@@ -1,55 +1,51 @@
 package dev.triumphteam.horizon.component
 
 import dev.triumphteam.horizon.dom.createDomElements
-import dev.triumphteam.horizon.html.CustomHtmlVisitorTag
+import dev.triumphteam.horizon.html.CustomHtmlConsumerTag
 import dev.triumphteam.horizon.html.HtmlRenderer
-import dev.triumphteam.horizon.html.HtmlVisitor
+import dev.triumphteam.horizon.html.HtmlConsumer
 import dev.triumphteam.horizon.html.tag.HtmlMarker
 import dev.triumphteam.horizon.html.tag.visit
 import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.MutableState
 import dev.triumphteam.horizon.state.SimpleMutableState
 import dev.triumphteam.horizon.state.State
+import kotlinx.coroutines.CoroutineScope
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import kotlin.coroutines.CoroutineContext
 
-internal typealias ComponentRender = HtmlVisitor.() -> Unit
+internal typealias ComponentRender = HtmlConsumer.() -> Unit
 
 @PublishedApi
 internal interface Component {
 
-    fun unmount()
+    /** Create and return the HTML elements. */
+    fun mount(): List<Element>
 
-    fun render()
+    fun unmount()
 
     fun cleanUpDom()
 
-    fun renderToDom()
+    fun update()
 
-    fun addRenderedChild(component: Component)
-}
-
-@PublishedApi
-internal object EmptyComponent : Component {
-    override fun unmount() {}
-    override fun render() {}
-    override fun cleanUpDom() {}
-    override fun renderToDom() {}
-    override fun addRenderedChild(component: Component) {}
+    fun addChild(component: Component)
 }
 
 @PublishedApi
 internal class ReactiveComponent(
-    private val parent: Component,
     private val boundNode: Node,
     private val render: ComponentRender,
     private val states: List<State<*>>,
-) : Component {
+) : Component, CoroutineScope {
 
     private var renderedElements: List<Element>? = null
     private val rendered: MutableList<Component> = mutableListOf()
 
     private val lastElementAtCreation = boundNode.lastChild
+
+    override val coroutineContext: CoroutineContext
+        get() = TODO("Not yet implemented")
 
     override fun unmount() {
         // Unmount child components.
@@ -71,16 +67,18 @@ internal class ReactiveComponent(
         renderedElements = null
     }
 
-    override fun render() {
-        renderToDom()
-        // Tell the parent that this component has been rendered.
-        parent.addRenderedChild(this)
+    override fun mount(): List<Element> {
+        // Create elements for this component.
+        return renderedElements ?: createDomElements(this, boundNode, render)
+            .also {
+                println("Elements created: ${it.map { it.tagName }}")
+                renderedElements = it
+            } // Cache it after rendering.
     }
 
-    override fun renderToDom() {
+    override fun update() {
         // Create elements for this component.
-        val elements = renderedElements ?: createDomElements(this, render)
-            .also { renderedElements = it } // Cache it after rendering.
+        val elements = mount()
 
         // Scenario A
         // - this
@@ -129,7 +127,7 @@ internal class ReactiveComponent(
         elements.forEach { element -> boundNode.insertBefore(element, elementAfter) }
     }
 
-    override fun addRenderedChild(component: Component) {
+    override fun addChild(component: Component) {
         rendered += component
     }
 }
@@ -172,13 +170,13 @@ internal class ComponentTag(
     override val renderer: HtmlRenderer,
     internal val functionalComponent: SimpleFunctionalComponent,
     override val attributes: MutableMap<String, String> = mutableMapOf(),
-) : CustomHtmlVisitorTag() {
+) : CustomHtmlConsumerTag() {
     override val tagName: String = "component"
     override val isVoid: Boolean = true
 }
 
 @HtmlMarker
-public inline fun HtmlVisitor.component(block: FunctionalComponent.() -> Unit) {
+public inline fun HtmlConsumer.component(block: FunctionalComponent.() -> Unit) {
     ComponentTag(renderer, SimpleFunctionalComponent().apply(block))
         .visit(renderer) {}
 }

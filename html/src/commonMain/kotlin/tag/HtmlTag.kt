@@ -2,10 +2,10 @@
 
 package dev.triumphteam.horizon.html.tag
 
+import dev.triumphteam.horizon.html.HtmlConsumerTag
 import dev.triumphteam.horizon.html.HtmlRenderer
 import dev.triumphteam.horizon.html.HtmlScope
 import dev.triumphteam.horizon.html.HtmlTag
-import dev.triumphteam.horizon.html.HtmlVisitorTag
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithAltAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithAudioVideoAttributes
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithAutoFocusAttribute
@@ -40,17 +40,18 @@ import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithWidthAttribute
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-public data class SimpleTag(
+public class SimpleTag(
     override val tagName: String,
-    override val renderer: HtmlRenderer,
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
     override val isVoid: Boolean,
-) : HtmlVisitorTag()
+) : HtmlConsumerTag(parentRenderer)
 
-public data class ATag(
-    override val renderer: HtmlRenderer,
+public class ATag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithDownloadAttribute, HtmlTagWithHrefAttribute, HtmlTagWithHrefLangAttribute,
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithDownloadAttribute, HtmlTagWithHrefAttribute,
+    HtmlTagWithHrefLangAttribute,
     HtmlTagWithMediaAttribute, HtmlTagWithRelAttribute, HtmlTagWithTargetAttribute, HtmlTagWithTypeAttribute,
     HtmlTagWithReferrerPolicyAttribute {
 
@@ -58,8 +59,8 @@ public data class ATag(
     override val isVoid: Boolean = false
 }
 
-public data class AreaTag(
-    override val renderer: HtmlRenderer,
+public class AreaTag(
+    override val parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
 ) : HtmlScope(), HtmlTagWithAltAttribute, HtmlTagWithDownloadAttribute, HtmlTagWithHrefAttribute,
     HtmlTagWithHrefLangAttribute, HtmlTagWithMediaAttribute, HtmlTagWithRelAttribute, HtmlTagWithTargetAttribute,
@@ -69,17 +70,17 @@ public data class AreaTag(
     override val isVoid: Boolean = true
 }
 
-public data class AudioTag(
-    override val renderer: HtmlRenderer,
+public class AudioTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithAudioVideoAttributes, HtmlTagWithSrcAttribute {
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithAudioVideoAttributes, HtmlTagWithSrcAttribute {
 
     override val tagName: String = "audio"
     override val isVoid: Boolean = false
 }
 
-public data class BaseTag(
-    override val renderer: HtmlRenderer,
+public class BaseTag(
+    override val parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
 ) : HtmlScope(), HtmlTagWithHrefAttribute, HtmlTagWithTargetAttribute {
 
@@ -87,19 +88,20 @@ public data class BaseTag(
     override val isVoid: Boolean = true
 }
 
-public data class BlockQuoteTag(
-    override val renderer: HtmlRenderer,
+public class BlockQuoteTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag() {
+) : HtmlConsumerTag(parentRenderer) {
 
     override val tagName: String = "blockquote"
     override val isVoid: Boolean = false
 }
 
-public data class ButtonTag(
-    override val renderer: HtmlRenderer,
+public class ButtonTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithAutoFocusAttribute, HtmlTagWithDisabledAttribute, HtmlTagWithFormAttribute,
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithAutoFocusAttribute, HtmlTagWithDisabledAttribute,
+    HtmlTagWithFormAttribute,
     HtmlTagWithFormActionAttribute, HtmlTagWithTypeAttribute, HtmlTagWithNameAttribute, HtmlTagWithValueAttribute {
 
     override val tagName: String = "button"
@@ -108,17 +110,17 @@ public data class ButtonTag(
     // TODO: Some extra attributes.
 }
 
-public data class CanvasTag(
-    override val renderer: HtmlRenderer,
+public class CanvasTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithWidthAttribute, HtmlTagWithHeightAttribute {
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithWidthAttribute, HtmlTagWithHeightAttribute {
 
     override val tagName: String = "canvas"
     override val isVoid: Boolean = false
 }
 
-public data class ImgTag(
-    override val renderer: HtmlRenderer,
+public class ImgTag(
+    override val parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
 ) : HtmlScope(), HtmlTagWithAltAttribute, HtmlTagWithHeightAttribute, HtmlTagWithWidthAttribute,
     HtmlTagWithReferrerPolicyAttribute, HtmlTagWithSizesAttribute, HtmlTagWithSrcAttribute {
@@ -129,8 +131,8 @@ public data class ImgTag(
     // TODO: Some extra attributes.
 }
 
-public data class InputTag(
-    override val renderer: HtmlRenderer,
+public class InputTag(
+    override val parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
 ) : HtmlScope(), HtmlTagWithAltAttribute, HtmlTagWithAutocompleteAttribute, HtmlTagWithAutoFocusAttribute,
     HtmlTagWithDisabledAttribute, HtmlTagWithFormAttribute, HtmlTagWithFormActionAttribute, HtmlTagWithHeightAttribute,
@@ -144,26 +146,26 @@ public data class InputTag(
     // TODO: Some extra attributes.
 }
 
-public data class LabelTag(
-    override val renderer: HtmlRenderer,
+public class LabelTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithForAttribute, HtmlTagWithFormAttribute {
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithForAttribute, HtmlTagWithFormAttribute {
 
     override val tagName: String = "label"
     override val isVoid: Boolean = false
 }
 
-public data class LiTag(
-    override val renderer: HtmlRenderer,
+public class LiTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithValueAttribute {
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithValueAttribute {
 
     override val tagName: String = "li"
     override val isVoid: Boolean = false
 }
 
-public data class LinkTag(
-    override val renderer: HtmlRenderer,
+public class LinkTag(
+    override val parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
 ) : HtmlScope(), HtmlTagWithHrefAttribute, HtmlTagWithHrefLangAttribute, HtmlTagWithReferrerPolicyAttribute,
     HtmlTagWithRelAttribute, HtmlTagWithSizesAttribute, HtmlTagWithMediaAttribute, HtmlTagWithTypeAttribute,
@@ -175,8 +177,8 @@ public data class LinkTag(
     // TODO: Some extra attributes.
 }
 
-public data class MetaTag(
-    override val renderer: HtmlRenderer,
+public class MetaTag(
+    override val parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
 ) : HtmlScope(), HtmlTagWithCharsetAttribute, HtmlTagWithNameAttribute {
 
@@ -184,38 +186,40 @@ public data class MetaTag(
     override val isVoid: Boolean = true
 }
 
-public data class OlTag(
-    override val renderer: HtmlRenderer,
+public class OlTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithTypeAttribute {
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithTypeAttribute {
 
     override val tagName: String = "ol"
     override val isVoid: Boolean = false
 }
 
-public data class ScriptTag(
-    override val renderer: HtmlRenderer,
+public class ScriptTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithCrossOriginAttribute, HtmlTagWithReferrerPolicyAttribute, HtmlTagWithSrcAttribute,
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithCrossOriginAttribute, HtmlTagWithReferrerPolicyAttribute,
+    HtmlTagWithSrcAttribute,
     HtmlTagWithTypeAttribute {
 
     override val tagName: String = "script"
     override val isVoid: Boolean = false
 }
 
-public data class StyleTag(
-    override val renderer: HtmlRenderer,
+public class StyleTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithMediaAttribute, HtmlTagWithTypeAttribute {
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithMediaAttribute, HtmlTagWithTypeAttribute {
 
     override val tagName: String = "style"
     override val isVoid: Boolean = false
 }
 
-public data class TextAreaTag(
-    override val renderer: HtmlRenderer,
+public class TextAreaTag(
+    parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
-) : HtmlVisitorTag(), HtmlTagWithAutoFocusAttribute, HtmlTagWithDirnameAttribute, HtmlTagWithDisabledAttribute,
+) : HtmlConsumerTag(parentRenderer), HtmlTagWithAutoFocusAttribute, HtmlTagWithDirnameAttribute,
+    HtmlTagWithDisabledAttribute,
     HtmlTagWithFormAttribute, HtmlTagWithPlaceholderAttribute, HtmlTagWithNameAttribute, HtmlTagWithReadOnlyAttribute {
 
     override val tagName: String = "textarea"
@@ -229,17 +233,11 @@ public inline fun <T : HtmlTag> T.visit(crossinline block: T.() -> Unit) {
     visitTag(block)
 }
 
-public inline fun <T : HtmlTag> T.visit(renderer: HtmlRenderer, crossinline block: T.() -> Unit) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    require(this.renderer === renderer) { "Wrong renderer!" }
-    visitTag(block)
-}
-
 public inline fun <T : HtmlTag> T.visitTag(block: T.() -> Unit) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    renderer.onStart(this)
+    parentRenderer.onStart(this)
     this.block()
-    renderer.onEnd(this)
+    parentRenderer.onEnd(this)
 }
 
 @PublishedApi
