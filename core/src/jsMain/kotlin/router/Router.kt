@@ -80,6 +80,7 @@ internal class Router(private val rootElement: Element) {
             segmentedRoute = parsedRoute.route,
             component = ReactiveComponent(
                 boundNode = rootElement,
+                lastElementAtCreation = null,
                 render = {
                     parsedRoute.route.block.invoke(this, variablesRoute)
                 },

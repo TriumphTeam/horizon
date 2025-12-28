@@ -50,13 +50,15 @@ public fun main() {
         }
 
         route("with-variable/:variable") { route ->
-            div {
+            div(id = "parent-div") {
+                // id = "parent-div"
                 component {
 
                     val variable by remember(route["variable"])
 
                     render {
                         div {
+                            id = "bitch"
                             text("You are on route with variable: $variable")
                         }
                     }
@@ -103,6 +105,9 @@ public fun main() {
             }
 
             div {
+                div {
+                    text("bu hu")
+                }
                 text("buh")
             }
         }

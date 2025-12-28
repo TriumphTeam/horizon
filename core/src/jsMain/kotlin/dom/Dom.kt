@@ -3,28 +3,42 @@ package dev.triumphteam.horizon.dom
 import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.ComponentTag
 import dev.triumphteam.horizon.component.ReactiveComponent
+import dev.triumphteam.horizon.html.AbstractDomHtmlRenderer
 import dev.triumphteam.horizon.html.CustomHtmlTag
 import dev.triumphteam.horizon.html.HtmlConsumer
 import dev.triumphteam.horizon.html.HtmlRenderer
-import dev.triumphteam.horizon.html.OldAbstractDomHtmlRenderer
+import dev.triumphteam.horizon.html.HtmlTag
 import dev.triumphteam.horizon.state.AbstractMutableState
-import org.w3c.dom.Element
 import org.w3c.dom.Node
 
 internal inline fun createDomElements(parent: Component, parentElement: Node, block: HtmlConsumer.() -> Unit) =
     DomRenderer(parent, parentElement).apply(block).render()
 
 internal class DomRenderer(private val parent: Component, private val parentElement: Node) :
-    OldAbstractDomHtmlRenderer() {
+    AbstractDomHtmlRenderer() {
 
-    override fun onCustomTagStart(tag: CustomHtmlTag, last: Element?) {
+    override fun onStart(tag: HtmlTag) {
+        println("Starting tag: ${tag.tagName}, id: ${tag.attributes["id"]}")
+        super.onStart(tag)
+    }
+
+    override fun onCustomTagStart(tag: CustomHtmlTag) {
         if (tag !is ComponentTag) error("Tried to render unknown custom tag '${tag.tagName}'.")
 
         val states = tag.functionalComponent.getStates()
 
+        val parentRenderer = requireNotNull(tag.parentRenderer as? DomRenderer) {
+            "Cannot render custom tag '${tag.tagName}' without a parent renderer."
+        }
+
+        println("Starting custom tag?")
+        println(parentRenderer.hashCode())
+        println("Current: ${parentRenderer.current?.tagName}")
+
         // Create the component.
         val component = ReactiveComponent(
-            boundNode = last ?: parentElement,
+            boundNode = parentRenderer.current ?: parentElement,
+            lastElementAtCreation = elements.lastOrNull(),
             render = tag.functionalComponent.getComponentRender(),
             states = states,
         )
@@ -43,15 +57,8 @@ internal class DomRenderer(private val parent: Component, private val parentElem
 
         // Then mount it.
         val elements = component.mount()
-
-        // If we do have an element, add it as a child.
-        if (last != null) {
-            elements.forEach(last::appendChild)
-            return
-        }
-
-        // Else add it to the path.
-        elements.forEach(path::add)
+        // Add elements to the current list.
+        elements.forEach(this.elements::add)
     }
 
     override fun onCustomTagEnd(tag: CustomHtmlTag) {

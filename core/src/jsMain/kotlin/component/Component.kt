@@ -2,8 +2,8 @@ package dev.triumphteam.horizon.component
 
 import dev.triumphteam.horizon.dom.createDomElements
 import dev.triumphteam.horizon.html.CustomHtmlConsumerTag
-import dev.triumphteam.horizon.html.HtmlRenderer
 import dev.triumphteam.horizon.html.HtmlConsumer
+import dev.triumphteam.horizon.html.HtmlRenderer
 import dev.triumphteam.horizon.html.tag.HtmlMarker
 import dev.triumphteam.horizon.html.tag.visit
 import dev.triumphteam.horizon.state.AbstractMutableState
@@ -21,7 +21,7 @@ internal typealias ComponentRender = HtmlConsumer.() -> Unit
 internal interface Component {
 
     /** Create and return the HTML elements. */
-    fun mount(): List<Element>
+    fun mount(): List<Node>
 
     fun unmount()
 
@@ -35,14 +35,13 @@ internal interface Component {
 @PublishedApi
 internal class ReactiveComponent(
     private val boundNode: Node,
+    private val lastElementAtCreation: Node?,
     private val render: ComponentRender,
     private val states: List<State<*>>,
 ) : Component, CoroutineScope {
 
-    private var renderedElements: List<Element>? = null
+    private var renderedElements: List<Node>? = null
     private val rendered: MutableList<Component> = mutableListOf()
-
-    private val lastElementAtCreation = boundNode.lastChild
 
     override val coroutineContext: CoroutineContext
         get() = TODO("Not yet implemented")
@@ -63,15 +62,18 @@ internal class ReactiveComponent(
     }
 
     override fun cleanUpDom() {
+        renderedElements?.forEach {
+            println("Removing element: $it, from parent: ${(boundNode as? Element)?.id}")
+        }
+
         renderedElements?.forEach(boundNode::removeChild)
         renderedElements = null
     }
 
-    override fun mount(): List<Element> {
+    override fun mount(): List<Node> {
         // Create elements for this component.
         return renderedElements ?: createDomElements(this, boundNode, render)
             .also {
-                println("Elements created: ${it.map { it.tagName }}")
                 renderedElements = it
             } // Cache it after rendering.
     }
@@ -167,16 +169,16 @@ internal class SimpleFunctionalComponent : FunctionalComponent {
 
 @PublishedApi
 internal class ComponentTag(
-    override val renderer: HtmlRenderer,
+    parentRenderer: HtmlRenderer,
     internal val functionalComponent: SimpleFunctionalComponent,
     override val attributes: MutableMap<String, String> = mutableMapOf(),
-) : CustomHtmlConsumerTag() {
+) : CustomHtmlConsumerTag(parentRenderer) { // TODO, PARENT INSTEAD
     override val tagName: String = "component"
-    override val isVoid: Boolean = true
+    override val isVoid: Boolean = false
 }
 
 @HtmlMarker
 public inline fun HtmlConsumer.component(block: FunctionalComponent.() -> Unit) {
     ComponentTag(renderer, SimpleFunctionalComponent().apply(block))
-        .visit(renderer) {}
+        .visit {}
 }

@@ -1,8 +1,10 @@
 package dev.triumphteam.horizon.html
 
 import dev.triumphteam.horizon.html.tag.HtmlContentNode
+import dev.triumphteam.horizon.html.tag.HtmlMarker
 import dev.triumphteam.horizon.html.tag.HtmlTagNode
 import dev.triumphteam.horizon.html.tag.createElement
+import dev.triumphteam.horizon.html.tag.visit
 
 public actual interface HtmlRenderer : HtmlConsumer {
     public actual fun onStart(tag: HtmlTag)
@@ -19,22 +21,15 @@ public inline fun createHtml(block: HtmlConsumer.() -> Unit): HtmlDocument {
     return HtmlDocument(content = HtmlDocumentRenderer().apply(block).render().first())
 }
 
-@PublishedApi
-internal class HtmlDocumentRenderer : HtmlRenderer {
+public open class HtmlDocumentRenderer : AbstractHtmlRenderer<HtmlTagNode, HtmlNode>() {
 
-    override val renderer: HtmlRenderer = this
-    override val parentRenderer: HtmlRenderer = this
-
-    private val elements: MutableList<HtmlNode> = mutableListOf()
-    private var current: HtmlTagNode? = null
-
-    override fun onStart(tag: HtmlTag) {
+    override fun onTagStart(tag: HtmlTag) {
         val element = createElement(tag.tagName, tag.isVoid)
         tag.attributes.forEach { (key, value) -> element.setAttribute(key, value) }
         current = element
     }
 
-    override fun onEnd(tag: HtmlTag) {
+    override fun onTagEnd(tag: HtmlTag) {
         val current = current ?: error("Trying to end tag ${tag.tagName} but it was never opened.")
 
         if (current.tagName.lowercase() != tag.tagName.lowercase()) {
@@ -76,11 +71,70 @@ internal class HtmlDocumentRenderer : HtmlRenderer {
 
     }
 
+    override fun onCustomTagStart(tag: CustomHtmlTag) {
+
+    }
+
+    override fun onCustomTagEnd(tag: CustomHtmlTag) {
+
+    }
+
     override fun createHtmlRenderer(): HtmlRenderer {
         return HtmlDocumentRenderer()
     }
 
     override fun render(): List<HtmlNode> = elements
+}
+
+public interface Component {
+
+    /** Create and return the HTML elements. */
+    public fun mount(): List<HtmlNode>
+}
+
+public class TestRenderer(private val parent: Component, private val parentElement: HtmlNode) : HtmlDocumentRenderer() {
+
+    override fun onCustomTagStart(tag: CustomHtmlTag) {
+        if (tag !is ComponentTag) error("Tried to render unknown custom tag '${tag.tagName}'.")
+
+
+        // Create the component.
+        val component = object : Component {
+            override fun mount(): List<HtmlNode> {
+                return listOf(
+                    HtmlTagNode(
+                        "div",
+                        false,
+                        children = mutableListOf(
+                            HtmlContentNode("buh"),
+                        ),
+                    ),
+                )
+            }
+        }
+
+        // Then mount it.
+        val elements = component.mount()
+        // Add elements to the current list.
+        elements.forEach(this.elements::add)
+    }
+
+    override fun createHtmlRenderer(): HtmlRenderer {
+        return TestRenderer(parent, parentElement)
+    }
+}
+
+public inline fun createTestHtml(block: HtmlConsumer.() -> Unit): HtmlDocument {
+    return HtmlDocument(
+        content = TestRenderer(
+            object : Component {
+                override fun mount(): List<HtmlNode> {
+                    return emptyList()
+                }
+            },
+            HtmlTagNode("root-fucking-tag", false),
+        ).apply(block).render().first(),
+    )
 }
 
 internal class HtmlStringRenderer(
@@ -124,6 +178,20 @@ internal class HtmlStringRenderer(
 
         appendLine("$mainIndentation</${node.tagName}>")
     }
+}
+
+@PublishedApi
+internal class ComponentTag(
+    parentRenderer: HtmlRenderer,
+    override val attributes: MutableMap<String, String> = mutableMapOf(),
+) : CustomHtmlConsumerTag(parentRenderer) { // TODO, PARENT INSTEAD
+    override val tagName: String = "component"
+    override val isVoid: Boolean = false
+}
+
+@HtmlMarker
+public inline fun HtmlConsumer.component() {
+    ComponentTag(renderer).visit {}
 }
 
 private fun CharSequence.escapeHtml(): String = this.toString()

@@ -3,6 +3,7 @@
 package dev.triumphteam.horizon.html
 
 import org.w3c.dom.Element
+import org.w3c.dom.Node
 import org.w3c.dom.events.Event
 
 public actual interface HtmlRenderer : HtmlConsumer {
@@ -13,10 +14,10 @@ public actual interface HtmlRenderer : HtmlConsumer {
     public actual fun createHtmlRenderer(): HtmlRenderer
     public fun onTagEvent(tag: HtmlTag, event: String, function: (Event) -> Unit)
 
-    public fun render(): List<Element>
+    public fun render(): List<Node>
 }
 
-public abstract class AbstractDomHtmlRenderer : AbstractHtmlRenderer<Element>() {
+public abstract class AbstractDomHtmlRenderer : AbstractHtmlRenderer<Element, Node>() {
 
     private companion object {
         private val document = kotlinx.browser.document
@@ -51,9 +52,7 @@ public abstract class AbstractDomHtmlRenderer : AbstractHtmlRenderer<Element>() 
     }
 
     override fun onContent(tag: HtmlTag, content: CharSequence) {
-        val current = current
-            ?: error("Trying to set content on tag ${tag.tagName} but it was never opened.")
-        current.appendChild(document.createTextNode(content.toString()))
+        elements.add(document.createTextNode(content.toString()))
     }
 
     override fun onAttribute(
@@ -85,7 +84,7 @@ public abstract class AbstractDomHtmlRenderer : AbstractHtmlRenderer<Element>() 
         current.setEvent(event, function)
     }
 
-    override fun render(): List<Element> = elements
+    override fun render(): List<Node> = elements
 }
 
 public abstract class OldAbstractDomHtmlRenderer : HtmlRenderer {

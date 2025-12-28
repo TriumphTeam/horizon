@@ -8,13 +8,13 @@ public expect interface HtmlRenderer : HtmlConsumer {
     public fun createHtmlRenderer(): HtmlRenderer
 }
 
-public abstract class AbstractHtmlRenderer<T> : HtmlRenderer {
+public abstract class AbstractHtmlRenderer<T : N, N> : HtmlRenderer {
 
     override val renderer: HtmlRenderer = this
     override val parentRenderer: HtmlRenderer = this
 
-    protected val elements: MutableList<T> = mutableListOf()
-    protected var current: T? = null
+    protected val elements: MutableList<N> = mutableListOf()
+    public var current: T? = null
 
     override fun onStart(tag: HtmlTag) {
         if (tag is CustomHtmlTag) {
