@@ -1,5 +1,6 @@
 package dev.triumphteam.horizon.component
 
+import dev.triumphteam.horizon.dom.DomRenderer
 import dev.triumphteam.horizon.dom.createDomElements
 import dev.triumphteam.horizon.html.CustomHtmlConsumerTag
 import dev.triumphteam.horizon.html.HtmlConsumer
@@ -170,6 +171,7 @@ internal class SimpleFunctionalComponent : FunctionalComponent {
 @PublishedApi
 internal class ComponentTag(
     parentRenderer: HtmlRenderer,
+    internal val boundNode: Element?,
     internal val functionalComponent: SimpleFunctionalComponent,
     override val attributes: MutableMap<String, String> = mutableMapOf(),
 ) : CustomHtmlConsumerTag(parentRenderer) { // TODO, PARENT INSTEAD
@@ -179,6 +181,9 @@ internal class ComponentTag(
 
 @HtmlMarker
 public inline fun HtmlConsumer.component(block: FunctionalComponent.() -> Unit) {
-    ComponentTag(renderer, SimpleFunctionalComponent().apply(block))
-        .visit {}
+    ComponentTag(
+        parentRenderer = renderer,
+        boundNode = (parentRenderer as? DomRenderer)?.current,
+        functionalComponent = SimpleFunctionalComponent().apply(block),
+    ).visit {}
 }

@@ -14,6 +14,7 @@ import org.w3c.dom.Node
 internal inline fun createDomElements(parent: Component, parentElement: Node, block: HtmlConsumer.() -> Unit) =
     DomRenderer(parent, parentElement).apply(block).render()
 
+@PublishedApi
 internal class DomRenderer(private val parent: Component, private val parentElement: Node) :
     AbstractDomHtmlRenderer() {
 
@@ -27,17 +28,13 @@ internal class DomRenderer(private val parent: Component, private val parentElem
 
         val states = tag.functionalComponent.getStates()
 
-        val parentRenderer = requireNotNull(tag.parentRenderer as? DomRenderer) {
-            "Cannot render custom tag '${tag.tagName}' without a parent renderer."
-        }
-
         println("Starting custom tag?")
         println(parentRenderer.hashCode())
-        println("Current: ${parentRenderer.current?.tagName}")
+        println("Current: ${tag.boundNode?.tagName}")
 
         // Create the component.
         val component = ReactiveComponent(
-            boundNode = parentRenderer.current ?: parentElement,
+            boundNode = tag.boundNode ?: parentElement,
             lastElementAtCreation = elements.lastOrNull(),
             render = tag.functionalComponent.getComponentRender(),
             states = states,

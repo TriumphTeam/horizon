@@ -22,7 +22,7 @@ public object Application {
         window.addEventListener(
             "popstate",
             {
-                println("Changed url -> ${window.location.pathname}")
+                router.navigateTo(window.location.pathname, pushState = false)
             },
         )
     }
