@@ -41,14 +41,9 @@ public abstract class AbstractDomHtmlRenderer : AbstractHtmlRenderer<Element, No
         }
 
         elements.add(current)
-    }
 
-    override fun onCustomTagStart(tag: CustomHtmlTag) {
-
-    }
-
-    override fun onCustomTagEnd(tag: CustomHtmlTag) {
-
+        // Clear current to prevent issues.
+        this.current = null
     }
 
     override fun onContent(tag: HtmlTag, content: CharSequence) {

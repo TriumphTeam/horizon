@@ -60,6 +60,27 @@ public fun main() {
                         div {
                             id = "bitch"
                             text("You are on route with variable: $variable")
+
+                            div {
+                                id = "deep-div"
+                                component {
+
+                                    var clicks by remember(0)
+
+                                    render {
+                                        div {
+                                            text("Clicks: $clicks")
+                                        }
+                                        button {
+                                            onClick = {
+                                                println("clicked!!!")
+                                                clicks++
+                                            }
+                                            text("Click me!")
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

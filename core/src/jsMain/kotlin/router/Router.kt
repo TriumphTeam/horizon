@@ -27,13 +27,15 @@ internal class Router(private val rootElement: Element) {
         this.routes += createSegmentedRoute(path, block)
     }
 
-    internal fun navigateTo(path: String) {
+    internal fun navigateTo(path: String, pushState: Boolean = true) {
         // Trim out leading and trailing characters.
         val trimmedPath = path.trim().removePrefix("/").removePrefix("/")
         val pathSegments = if (trimmedPath.isEmpty()) emptyList() else trimmedPath.split("/")
 
         // TODO, prolly needs to be changed.
-        window.history.pushState(null, document.title, path)
+        if (pushState) {
+            window.history.pushState(null, document.title, path)
+        }
 
         if (pathSegments.isEmpty()) {
             println("Using index route, $indexRoute")
