@@ -6,8 +6,6 @@ import dev.triumphteam.horizon.html.tag.br
 import dev.triumphteam.horizon.html.tag.button
 import dev.triumphteam.horizon.html.tag.div
 import dev.triumphteam.horizon.router.navigate
-import kotlinx.html.Entities
-import kotlinx.html.InputType
 
 public fun main() {
     app {
@@ -24,10 +22,14 @@ public fun main() {
             navigate(to = "/example2") {
                 text("Example 2!")
             }
+
+            navigate(to = "/with-variable/example") {
+                text("Navigation to example with variable!")
+            }
         }
 
 
-        route("example2") {
+        index {
             div {
                 className = "test"
 
@@ -102,7 +104,11 @@ public fun main() {
 
             a {
                 href = "#example"
-                text("Example!")
+                text("Example anchor!")
+            }
+
+            navigate(to = "/example") {
+                text("Navigate to example route!")
             }
 
             br()

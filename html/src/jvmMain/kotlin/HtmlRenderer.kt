@@ -86,57 +86,6 @@ public open class HtmlDocumentRenderer : AbstractHtmlRenderer<HtmlTagNode, HtmlN
     override fun render(): List<HtmlNode> = elements
 }
 
-public interface Component {
-
-    /** Create and return the HTML elements. */
-    public fun mount(): List<HtmlNode>
-}
-
-public class TestRenderer(private val parent: Component, private val parentElement: HtmlNode) : HtmlDocumentRenderer() {
-
-    override fun onCustomTagStart(tag: CustomHtmlTag) {
-        if (tag !is ComponentTag) error("Tried to render unknown custom tag '${tag.tagName}'.")
-
-
-        // Create the component.
-        val component = object : Component {
-            override fun mount(): List<HtmlNode> {
-                return listOf(
-                    HtmlTagNode(
-                        "div",
-                        false,
-                        children = mutableListOf(
-                            HtmlContentNode("buh"),
-                        ),
-                    ),
-                )
-            }
-        }
-
-        // Then mount it.
-        val elements = component.mount()
-        // Add elements to the current list.
-        elements.forEach(this.elements::add)
-    }
-
-    override fun createHtmlRenderer(): HtmlRenderer {
-        return TestRenderer(parent, parentElement)
-    }
-}
-
-public inline fun createTestHtml(block: HtmlConsumer.() -> Unit): HtmlDocument {
-    return HtmlDocument(
-        content = TestRenderer(
-            object : Component {
-                override fun mount(): List<HtmlNode> {
-                    return emptyList()
-                }
-            },
-            HtmlTagNode("root-fucking-tag", false),
-        ).apply(block).render().first(),
-    )
-}
-
 internal class HtmlStringRenderer(
     private val prettyPrint: Boolean = false,
     private val document: HtmlDocument,
@@ -178,20 +127,6 @@ internal class HtmlStringRenderer(
 
         appendLine("$mainIndentation</${node.tagName}>")
     }
-}
-
-@PublishedApi
-internal class ComponentTag(
-    parentRenderer: HtmlRenderer,
-    override val attributes: MutableMap<String, String> = mutableMapOf(),
-) : CustomHtmlConsumerTag(parentRenderer) { // TODO, PARENT INSTEAD
-    override val tagName: String = "component"
-    override val isVoid: Boolean = false
-}
-
-@HtmlMarker
-public inline fun HtmlConsumer.component() {
-    ComponentTag(renderer).visit {}
 }
 
 private fun CharSequence.escapeHtml(): String = this.toString()

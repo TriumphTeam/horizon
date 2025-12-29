@@ -3,9 +3,9 @@
 package dev.triumphteam.horizon.state
 
 import dev.triumphteam.horizon.component.Component
+import dev.triumphteam.horizon.state.policy.StateMutationPolicy
+import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
 import kotlin.reflect.KProperty
-
-public inline fun <T> mutableStateOf(initialValue: T): MutableState<T> = SimpleMutableState(initialValue)
 
 public interface State<T> {
 
@@ -22,7 +22,6 @@ public abstract class AbstractMutableState<T> : MutableState<T> {
     private val listeners: MutableMap<Component, () -> Unit> = mutableMapOf()
 
     internal fun addListener(component: Component, listener: () -> Unit) {
-        println("Adding listener")
         listeners[component] = listener
     }
 
@@ -31,13 +30,12 @@ public abstract class AbstractMutableState<T> : MutableState<T> {
     }
 
     protected fun update() {
-        println("Updating state!")
-        println("Currently have ${listeners.size} listeners.")
         listeners.forEach { (_, listener) -> listener() }
     }
 }
 
-public open class SimpleMutableState<T>(initialValue: T) : AbstractMutableState<T>() {
+public open class SimpleMutableState<T>(initialValue: T, private val mutationPolicy: StateMutationPolicy<T>) :
+    AbstractMutableState<T>() {
 
     internal var value: T = initialValue
         private set
@@ -50,12 +48,22 @@ public open class SimpleMutableState<T>(initialValue: T) : AbstractMutableState<
         setValue(value)
     }
 
-    internal fun setValue(value: T) {
+    internal fun setValue(value: T): Boolean {
+        val shouldMutate = mutationPolicy.shouldMutate(this.value, value)
+
+        if (!shouldMutate) return false
+
         this.value = value
         update()
+        return true
     }
 
     override fun toString(): String {
         return "[$value]"
     }
 }
+
+public inline fun <T> mutableStateOf(
+    initialValue: T,
+    mutationPolicy: StateMutationPolicy<T> = StructureEqualityPolicy(),
+): MutableState<T> = SimpleMutableState(initialValue, mutationPolicy)

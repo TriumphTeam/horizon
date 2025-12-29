@@ -4,10 +4,9 @@ import dev.triumphteam.horizon.html.tag.div
 
 public fun main() {
 
-    val mine = createTestHtml {
+    val mine = createHtml {
         div {
             id = "parent-div"
-            component()
         }
     }
 

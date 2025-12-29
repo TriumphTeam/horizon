@@ -3,8 +3,10 @@ package dev.triumphteam.horizon.router
 import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.html.HtmlConsumer
+import dev.triumphteam.horizon.html.tag.div
 import dev.triumphteam.horizon.state.SimpleMutableState
 import dev.triumphteam.horizon.state.State
+import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
@@ -14,13 +16,25 @@ internal typealias RouteBlock = HtmlConsumer.(Route) -> Unit
 @PublishedApi
 internal class Router(private val rootElement: Element) {
 
-    private var indexRoute: SegmentedRoute? = null
-    private var notFoundRoute: SegmentedRoute? = null
+    companion object {
+        const val NOT_FOUND_ROUTE = "/404"
+        const val DEFAULT_INDEX_ROUTE = "/"
+    }
 
-    private val routes: MutableList<SegmentedRoute> = mutableListOf()
+    private var indexRoute: SegmentedRoute? = null
+
+    private val routes: MutableList<SegmentedRoute> = mutableListOf(
+        createSegmentedRoute("/404") {
+            div { text("404 Not Found") }
+        },
+    )
+
+    private var currentRoute: DecodedRoute? = null
 
     @PublishedApi
-    internal var currentRoute: DecodedRoute? = null
+    internal fun index(block: RouteBlock) {
+        indexRoute = createSegmentedRoute(DEFAULT_INDEX_ROUTE, block)
+    }
 
     @PublishedApi
     internal fun route(path: String, block: RouteBlock) {
@@ -32,48 +46,43 @@ internal class Router(private val rootElement: Element) {
         val trimmedPath = path.trim().removePrefix("/").removePrefix("/")
         val pathSegments = if (trimmedPath.isEmpty()) emptyList() else trimmedPath.split("/")
 
-        // TODO, prolly needs to be changed.
-        if (pushState) {
-            window.history.pushState(null, document.title, path)
+
+        val route = when {
+            pathSegments.isEmpty() -> indexRoute?.let { ParsedRoute(it, path, emptyMap()) }
+            else -> findRoute(pathSegments, path)
         }
 
-        if (pathSegments.isEmpty()) {
-            println("Using index route, $indexRoute")
+        if (route == null) {
+            navigateTo(NOT_FOUND_ROUTE, pushState)
             return
         }
 
-        findAndHandleRoute(pathSegments)
+        handleRoute(route, pushState)
     }
 
-    private fun findAndHandleRoute(pathSegments: List<String>) {
-        println("Going to find route for path: $pathSegments")
-
-        fun findRoute(): ParsedRoute? {
-            routes.forEach { route ->
-                return tryParseRoute(route, pathSegments) ?: return@forEach
-            }
-
-            return null
+    private fun findRoute(pathSegments: List<String>, path: String): ParsedRoute? {
+        routes.forEach { route ->
+            return tryParseRoute(route, path, pathSegments) ?: return@forEach
         }
 
-        val parsedRoute = findRoute()
+        return null
+    }
 
-        if (parsedRoute == null) {
-            println("No route found, using not found route, $notFoundRoute")
-            // window.history.pushState(null, document.title, "/404")
-            return
-        }
-
+    private fun handleRoute(parsedRoute: ParsedRoute, pushState: Boolean) {
         // Found a matching route
-
-        println("Going to check if routes are the same.")
-
         val currentRoute = this.currentRoute
 
+        // If the route matches, we just need to update the variables.
         if (currentRoute != null && currentRoute.segmentedRoute == parsedRoute.route) {
-            println("same route!!!")
-            currentRoute.route.updateVariables(parsedRoute.variables)
+            if (currentRoute.route.updateVariables(parsedRoute.variables) && pushState) {
+                // Only push state if the variables changed and we are meant to push state.
+                window.history.pushState(null, document.title, parsedRoute.path)
+            }
             return
+        }
+
+        if (pushState) {
+            window.history.pushState(null, document.title, parsedRoute.path)
         }
 
         val variablesRoute = SimpleRoute(parsedRoute.variables)
@@ -103,6 +112,7 @@ internal class Router(private val rootElement: Element) {
 
     private fun tryParseRoute(
         route: SegmentedRoute,
+        path: String,
         segments: List<String>,
     ): ParsedRoute? {
 
@@ -129,6 +139,7 @@ internal class Router(private val rootElement: Element) {
 
         return ParsedRoute(
             route = route,
+            path = path,
             variables = variables,
         )
     }
@@ -178,6 +189,7 @@ internal data class SegmentedRoute(
 
 private data class ParsedRoute(
     val route: SegmentedRoute,
+    val path: String,
     val variables: Map<String, String>,
 )
 
@@ -199,7 +211,7 @@ internal class DecodedRoute(
 internal class SimpleRoute(variables: Map<String, String>) : Route {
 
     private val variableStates = variables.mapValues { (name, value) ->
-        SimpleMutableState(value)
+        SimpleMutableState(value, StructureEqualityPolicy())
     }
 
     override fun get(name: String): State<String> {
@@ -218,9 +230,9 @@ internal class SimpleRoute(variables: Map<String, String>) : Route {
         return variableStates[name]?.value
     }
 
-    internal fun updateVariables(variables: Map<String, String>) {
-        variables.forEach { (name, newValue) ->
-            variableStates[name]?.setValue(newValue) ?: return@forEach
-        }
+    internal fun updateVariables(variables: Map<String, String>): Boolean {
+        return variables.map { (name, newValue) ->
+            variableStates[name]?.setValue(newValue) ?: return@map false
+        }.any { it }
     }
 }

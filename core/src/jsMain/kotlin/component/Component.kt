@@ -2,6 +2,7 @@ package dev.triumphteam.horizon.component
 
 import dev.triumphteam.horizon.dom.DomRenderer
 import dev.triumphteam.horizon.dom.createDomElements
+import dev.triumphteam.horizon.dom.safeRemoveChild
 import dev.triumphteam.horizon.html.CustomHtmlConsumerTag
 import dev.triumphteam.horizon.html.HtmlConsumer
 import dev.triumphteam.horizon.html.HtmlRenderer
@@ -11,6 +12,8 @@ import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.MutableState
 import dev.triumphteam.horizon.state.SimpleMutableState
 import dev.triumphteam.horizon.state.State
+import dev.triumphteam.horizon.state.policy.StateMutationPolicy
+import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
 import kotlinx.coroutines.CoroutineScope
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -42,16 +45,16 @@ internal class ReactiveComponent(
 ) : Component, CoroutineScope {
 
     private var renderedElements: List<Node>? = null
-    private val rendered: MutableList<Component> = mutableListOf()
+    private val children: MutableList<Component> = mutableListOf()
 
     override val coroutineContext: CoroutineContext
         get() = TODO("Not yet implemented")
 
     override fun unmount() {
         // Unmount child components.
-        rendered.forEach(Component::unmount)
+        children.forEach(Component::unmount)
         // Then the list of previously rendered components.
-        rendered.clear()
+        children.clear()
         // Clean up the states.
         states.forEach { state ->
             if (state is AbstractMutableState) {
@@ -63,11 +66,7 @@ internal class ReactiveComponent(
     }
 
     override fun cleanUpDom() {
-        renderedElements?.forEach {
-            println("Removing element: $it, from parent: ${(boundNode as? Element)?.id}")
-        }
-
-        renderedElements?.forEach(boundNode::removeChild)
+        renderedElements?.forEach(boundNode::safeRemoveChild)
         renderedElements = null
     }
 
@@ -131,13 +130,16 @@ internal class ReactiveComponent(
     }
 
     override fun addChild(component: Component) {
-        rendered += component
+        children += component
     }
 }
 
 public interface FunctionalComponent {
 
-    public fun <T> remember(initialValue: T): MutableState<T>
+    public fun <T> remember(
+        initialValue: T,
+        mutationPolicy: StateMutationPolicy<T> = StructureEqualityPolicy(),
+    ): MutableState<T>
 
     public fun <T> remember(state: State<T>): State<T>
 
@@ -151,8 +153,8 @@ internal class SimpleFunctionalComponent : FunctionalComponent {
     private var render: ComponentRender? = null
     private val states = mutableListOf<State<*>>()
 
-    override fun <T> remember(initialValue: T): MutableState<T> {
-        return SimpleMutableState(initialValue).also(states::add)
+    override fun <T> remember(initialValue: T, mutationPolicy: StateMutationPolicy<T>): MutableState<T> {
+        return SimpleMutableState(initialValue, mutationPolicy).also(states::add)
     }
 
     override fun <T> remember(state: State<T>): State<T> = state.also(states::add)
@@ -174,7 +176,7 @@ internal class ComponentTag(
     internal val boundNode: Element?,
     internal val functionalComponent: SimpleFunctionalComponent,
     override val attributes: MutableMap<String, String> = mutableMapOf(),
-) : CustomHtmlConsumerTag(parentRenderer) { // TODO, PARENT INSTEAD
+) : CustomHtmlConsumerTag(parentRenderer) {
     override val tagName: String = "component"
     override val isVoid: Boolean = false
 }

@@ -28,28 +28,26 @@ public object Application {
     }
 
     public fun goTo(path: String) {
-        println("Going to $path")
         router.navigateTo(path)
     }
 
     public fun index(block: RouteBlock) {
-
+        router.index(block)
     }
 
     public fun route(path: String, block: RouteBlock) {
         router.route(path, block)
     }
 
-    /*public inline fun <reified T> routes(block: NestedRoute.(T) -> Unit) {
-        val segments = segments<T>()
-    }*/
-
-    public fun notFound(block: () -> Unit) {}
+    public fun notFound(block: RouteBlock) {
+        router.route(Router.NOT_FOUND_ROUTE, block)
+    }
 }
 
 public fun app(block: Application.() -> Unit) {
     block(Application)
 
     // Once we finish loading the application, we can navigate to the current URL.
-    Application.router.navigateTo(window.location.pathname)
+    // We don't push state on this call, so we don't add 2 histories right at the beginning.
+    Application.router.navigateTo(window.location.pathname, pushState = false)
 }
