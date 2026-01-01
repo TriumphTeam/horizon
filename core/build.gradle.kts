@@ -1,5 +1,6 @@
 plugins {
     id("horizon.base")
+    id("horizon.library")
 }
 
 kotlin {
