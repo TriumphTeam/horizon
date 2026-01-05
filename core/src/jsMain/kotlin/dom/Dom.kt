@@ -10,11 +10,10 @@ import dev.triumphteam.horizon.html.HtmlRenderer
 import dev.triumphteam.horizon.state.AbstractMutableState
 import org.w3c.dom.Node
 
-internal inline fun createDomElements(parent: Component, parentElement: Node, block: HtmlConsumer.() -> Unit) =
-    DomRenderer(parent, parentElement).apply(block).render()
+internal inline fun createHorizonElements(parent: Component, parentElement: Node, block: HtmlConsumer.() -> Unit) =
+    HorizonRenderer(parent, parentElement).apply(block).render()
 
-@PublishedApi
-internal class DomRenderer(private val parent: Component, private val parentElement: Node) :
+public class HorizonRenderer(private val parent: Component, private val parentElement: Node) :
     AbstractDomHtmlRenderer() {
 
     override fun onCustomTagStart(tag: CustomHtmlTag) {
@@ -53,7 +52,7 @@ internal class DomRenderer(private val parent: Component, private val parentElem
     }
 
     override fun createHtmlRenderer(): HtmlRenderer {
-        return DomRenderer(parent, parentElement)
+        return HorizonRenderer(parent, parentElement)
     }
 }
 

@@ -1,6 +1,7 @@
 package dev.triumphteam.horizon
 
-import dev.triumphteam.horizon.component.component
+import dev.triumphteam.horizon.component.functional.component
+import dev.triumphteam.horizon.component.functional.elementComponent
 import dev.triumphteam.horizon.html.tag.a
 import dev.triumphteam.horizon.html.tag.br
 import dev.triumphteam.horizon.html.tag.button
@@ -38,6 +39,13 @@ public fun main() {
                 /*onClick = { event ->
                     window.alert("Kotlin!")
                 }*/
+            }
+
+            elementComponent {
+
+                render {
+
+                }
             }
 
             navigate(to = "/example") {

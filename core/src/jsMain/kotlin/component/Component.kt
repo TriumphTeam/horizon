@@ -1,39 +1,28 @@
 package dev.triumphteam.horizon.component
 
-import dev.triumphteam.horizon.dom.DomRenderer
-import dev.triumphteam.horizon.dom.createDomElements
+import dev.triumphteam.horizon.dom.createHorizonElements
 import dev.triumphteam.horizon.dom.safeRemoveChild
-import dev.triumphteam.horizon.html.CustomHtmlConsumerTag
 import dev.triumphteam.horizon.html.HtmlConsumer
-import dev.triumphteam.horizon.html.HtmlRenderer
-import dev.triumphteam.horizon.html.tag.HtmlMarker
-import dev.triumphteam.horizon.html.tag.visit
 import dev.triumphteam.horizon.state.AbstractMutableState
-import dev.triumphteam.horizon.state.MutableState
-import dev.triumphteam.horizon.state.SimpleMutableState
 import dev.triumphteam.horizon.state.State
-import dev.triumphteam.horizon.state.policy.StateMutationPolicy
-import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
 import kotlinx.coroutines.CoroutineScope
-import org.w3c.dom.Element
 import org.w3c.dom.Node
 import kotlin.coroutines.CoroutineContext
 
 internal typealias ComponentRender = HtmlConsumer.() -> Unit
 
-@PublishedApi
-internal interface Component {
+public interface Component : CoroutineScope {
 
     /** Create and return the HTML elements. */
-    fun mount(): List<Node>
+    public fun mount(): List<Node>
 
-    fun unmount()
+    public fun unmount()
 
-    fun cleanUpDom()
+    public fun cleanUpDom()
 
-    fun update()
+    public fun update()
 
-    fun addChild(component: Component)
+    public fun addChild(component: Component)
 }
 
 @PublishedApi
@@ -42,7 +31,7 @@ internal class ReactiveComponent(
     private val lastElementAtCreation: Node?,
     private val render: ComponentRender,
     private val states: List<State<*>>,
-) : Component, CoroutineScope {
+) : Component {
 
     private var renderedElements: List<Node>? = null
     private val children: MutableList<Component> = mutableListOf()
@@ -72,7 +61,7 @@ internal class ReactiveComponent(
 
     override fun mount(): List<Node> {
         // Create elements for this component.
-        return renderedElements ?: createDomElements(this, boundNode, render)
+        return renderedElements ?: createHorizonElements(this, boundNode, render)
             .also {
                 renderedElements = it
             } // Cache it after rendering.
@@ -134,58 +123,8 @@ internal class ReactiveComponent(
     }
 }
 
-public interface FunctionalComponent {
+public class ReactiveElementComponent(
 
-    public fun <T> remember(
-        initialValue: T,
-        mutationPolicy: StateMutationPolicy<T> = StructureEqualityPolicy(),
-    ): MutableState<T>
+) {
 
-    public fun <T> remember(state: State<T>): State<T>
-
-    @HtmlMarker
-    public fun render(block: ComponentRender)
-}
-
-@PublishedApi
-internal class SimpleFunctionalComponent : FunctionalComponent {
-
-    private var render: ComponentRender? = null
-    private val states = mutableListOf<State<*>>()
-
-    override fun <T> remember(initialValue: T, mutationPolicy: StateMutationPolicy<T>): MutableState<T> {
-        return SimpleMutableState(initialValue, mutationPolicy).also(states::add)
-    }
-
-    override fun <T> remember(state: State<T>): State<T> = state.also(states::add)
-
-    override fun render(block: ComponentRender) {
-        this.render = block
-    }
-
-    @PublishedApi
-    internal fun getStates(): List<State<*>> = states.toList()
-
-    @PublishedApi
-    internal fun getComponentRender(): ComponentRender = render ?: {}
-}
-
-@PublishedApi
-internal class ComponentTag(
-    parentRenderer: HtmlRenderer,
-    internal val boundNode: Element?,
-    internal val functionalComponent: SimpleFunctionalComponent,
-    override val attributes: MutableMap<String, String> = mutableMapOf(),
-) : CustomHtmlConsumerTag(parentRenderer) {
-    override val tagName: String = "component"
-    override val isVoid: Boolean = false
-}
-
-@HtmlMarker
-public inline fun HtmlConsumer.component(block: FunctionalComponent.() -> Unit) {
-    ComponentTag(
-        parentRenderer = renderer,
-        boundNode = (parentRenderer as? DomRenderer)?.current,
-        functionalComponent = SimpleFunctionalComponent().apply(block),
-    ).visit {}
 }
