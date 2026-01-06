@@ -1,12 +1,6 @@
 package dev.triumphteam.horizon
 
-import dev.triumphteam.horizon.component.functional.component
-import dev.triumphteam.horizon.component.functional.elementComponent
-import dev.triumphteam.horizon.html.tag.a
-import dev.triumphteam.horizon.html.tag.br
-import dev.triumphteam.horizon.html.tag.button
-import dev.triumphteam.horizon.html.tag.div
-import dev.triumphteam.horizon.router.navigate
+import dev.triumphteam.horizon.html.div
 
 public fun main() {
     app {
@@ -20,13 +14,13 @@ public fun main() {
                 }*/
             }
 
-            navigate(to = "/example2") {
+            /*navigate(to = "/example2") {
                 text("Example 2!")
             }
 
             navigate(to = "/with-variable/example") {
                 text("Navigation to example with variable!")
-            }
+            }*/
         }
 
 
@@ -41,14 +35,7 @@ public fun main() {
                 }*/
             }
 
-            elementComponent {
-
-                render {
-
-                }
-            }
-
-            navigate(to = "/example") {
+            /*navigate(to = "/example") {
                 text("Example!")
             }
 
@@ -56,10 +43,10 @@ public fun main() {
 
             navigate(to = "/with-variable/example") {
                 text("Example with variable!")
-            }
+            }*/
         }
 
-        route("with-variable/:variable") { route ->
+        /*route("with-variable/:variable") { route ->
             div(id = "parent-div") {
                 // id = "parent-div"
                 component {
@@ -145,7 +132,7 @@ public fun main() {
                 }
                 text("buh")
             }
-        }
+        }*/
 
         /* routes<Test> {
 

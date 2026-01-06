@@ -2,8 +2,8 @@ package dev.triumphteam.horizon.router
 
 import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.ReactiveComponent
-import dev.triumphteam.horizon.html.HtmlConsumer
-import dev.triumphteam.horizon.html.tag.div
+import dev.triumphteam.horizon.html.FlowContent
+import dev.triumphteam.horizon.html.div
 import dev.triumphteam.horizon.state.SimpleMutableState
 import dev.triumphteam.horizon.state.State
 import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
@@ -11,7 +11,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
 
-internal typealias RouteBlock = HtmlConsumer.(Route) -> Unit
+internal typealias RouteBlock = FlowContent.(Route) -> Unit
 
 @PublishedApi
 internal class Router(private val rootElement: Element) {

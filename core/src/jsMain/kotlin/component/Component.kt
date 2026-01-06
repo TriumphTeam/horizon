@@ -1,20 +1,20 @@
 package dev.triumphteam.horizon.component
 
-import dev.triumphteam.horizon.dom.createHorizonElements
 import dev.triumphteam.horizon.dom.safeRemoveChild
-import dev.triumphteam.horizon.html.HtmlConsumer
+import dev.triumphteam.horizon.html.FlowContent
+import dev.triumphteam.horizon.html.Tag
+import dev.triumphteam.horizon.html.createHtml
 import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.State
 import kotlinx.coroutines.CoroutineScope
 import org.w3c.dom.Node
 import kotlin.coroutines.CoroutineContext
 
-internal typealias ComponentRender = HtmlConsumer.() -> Unit
+internal typealias ComponentRender = FlowContent.() -> Unit
 
 public interface Component : CoroutineScope {
 
-    /** Create and return the HTML elements. */
-    public fun mount(): List<Node>
+    public fun mount(): List<Tag>
 
     public fun unmount()
 
@@ -33,7 +33,7 @@ internal class ReactiveComponent(
     private val states: List<State<*>>,
 ) : Component {
 
-    private var renderedElements: List<Node>? = null
+    private var renderedElements: List<Tag>? = null
     private val children: MutableList<Component> = mutableListOf()
 
     override val coroutineContext: CoroutineContext
@@ -55,16 +55,19 @@ internal class ReactiveComponent(
     }
 
     override fun cleanUpDom() {
-        renderedElements?.forEach(boundNode::safeRemoveChild)
+        renderedElements?.forEach { tag ->
+            boundNode.safeRemoveChild(tag.element)
+        }
         renderedElements = null
     }
 
-    override fun mount(): List<Node> {
+    override fun mount(): List<Tag> {
         // Create elements for this component.
-        return renderedElements ?: createHorizonElements(this, boundNode, render)
-            .also {
-                renderedElements = it
-            } // Cache it after rendering.
+        return renderedElements ?: createHtml(render)
+        //createHorizonElements(this, boundNode, render)
+        /*.also {
+            renderedElements = it
+        } // Cache it after rendering.*/
     }
 
     override fun update() {
@@ -95,12 +98,12 @@ internal class ReactiveComponent(
 
             // If it doesn't, we append as if we're the only elements.
             if (firstElement == null) {
-                elements.forEach(boundNode::appendChild)
+                elements.forEach { boundNode.appendChild(it.element) }
                 return
             }
 
             // If we have a first element, we insert before it.
-            elements.forEach { element -> boundNode.insertBefore(element, firstElement) }
+            elements.forEach { tag -> boundNode.insertBefore(tag.element, firstElement) }
             return
         }
 
@@ -110,21 +113,15 @@ internal class ReactiveComponent(
 
         // If no sibling exists, we append as if we're the last element.
         if (elementAfter == null) {
-            elements.forEach(boundNode::appendChild)
+            elements.forEach { boundNode.appendChild(it.element) }
             return
         }
 
         // If we do have it, we insert before it.
-        elements.forEach { element -> boundNode.insertBefore(element, elementAfter) }
+        elements.forEach { tag -> boundNode.insertBefore(tag.element, elementAfter) }
     }
 
     override fun addChild(component: Component) {
         children += component
     }
-}
-
-public class ReactiveElementComponent(
-
-) {
-
 }

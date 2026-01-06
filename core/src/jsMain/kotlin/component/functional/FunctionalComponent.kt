@@ -1,17 +1,10 @@
 package dev.triumphteam.horizon.component.functional
 
 import dev.triumphteam.horizon.component.ComponentRender
-import dev.triumphteam.horizon.dom.HorizonRenderer
-import dev.triumphteam.horizon.html.CustomHtmlConsumerTag
-import dev.triumphteam.horizon.html.HtmlConsumer
-import dev.triumphteam.horizon.html.HtmlRenderer
-import dev.triumphteam.horizon.html.tag.HtmlMarker
-import dev.triumphteam.horizon.html.tag.visit
-import org.w3c.dom.Element
 
 public interface FunctionalComponent : StateHolder {
 
-    @HtmlMarker
+    // @HtmlMarker
     public fun render(block: ComponentRender)
 }
 
@@ -28,7 +21,7 @@ internal class SimpleFunctionalComponent : AbstractStateHolder(), FunctionalComp
     internal fun getComponentRender(): ComponentRender = render ?: {}
 }
 
-@PublishedApi
+/*@PublishedApi
 internal class ComponentTag(
     parentRenderer: HtmlRenderer,
     internal val boundNode: Element?,
@@ -46,4 +39,4 @@ public inline fun HtmlConsumer.component(block: FunctionalComponent.() -> Unit) 
         boundNode = (parentRenderer as? HorizonRenderer)?.current,
         functionalComponent = SimpleFunctionalComponent().apply(block),
     ).visit {}
-}
+}*/

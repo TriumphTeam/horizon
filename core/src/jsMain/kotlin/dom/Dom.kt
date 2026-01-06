@@ -1,19 +1,15 @@
 package dev.triumphteam.horizon.dom
 
 import dev.triumphteam.horizon.component.Component
-import dev.triumphteam.horizon.component.ComponentTag
-import dev.triumphteam.horizon.component.ReactiveComponent
-import dev.triumphteam.horizon.html.AbstractDomHtmlRenderer
-import dev.triumphteam.horizon.html.CustomHtmlTag
-import dev.triumphteam.horizon.html.HtmlConsumer
-import dev.triumphteam.horizon.html.HtmlRenderer
-import dev.triumphteam.horizon.state.AbstractMutableState
+import dev.triumphteam.horizon.html.FlowContent
+import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-internal inline fun createHorizonElements(parent: Component, parentElement: Node, block: HtmlConsumer.() -> Unit) =
-    HorizonRenderer(parent, parentElement).apply(block).render()
+internal inline fun createHorizonElements(parent: Component, parentElement: Node, block: FlowContent.() -> Unit) =
+    emptyList<Element>()
+// HorizonRenderer(parent, parentElement).apply(block).render()
 
-public class HorizonRenderer(private val parent: Component, private val parentElement: Node) :
+public class HorizonRenderer(private val parent: Component, private val parentElement: Node) /*:
     AbstractDomHtmlRenderer() {
 
     override fun onCustomTagStart(tag: CustomHtmlTag) {
@@ -54,7 +50,7 @@ public class HorizonRenderer(private val parent: Component, private val parentEl
     override fun createHtmlRenderer(): HtmlRenderer {
         return HorizonRenderer(parent, parentElement)
     }
-}
+}*/
 
 public fun Node.safeRemoveChild(child: Node) {
     if (child.parentNode == this) {

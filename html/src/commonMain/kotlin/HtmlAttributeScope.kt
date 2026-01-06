@@ -55,7 +55,6 @@ import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithValueAttribute
 import dev.triumphteam.horizon.html.tag.attributes.HtmlTagWithWidthAttribute
 import dev.triumphteam.horizon.html.tag.attributes.Preload
 import dev.triumphteam.horizon.html.tag.attributes.ReferrerPolicy
-import dev.triumphteam.horizon.html.tag.attributes.Target
 import dev.triumphteam.horizon.html.tag.attributes.setAttribute
 
 public abstract class HtmlAttributeScope : HtmlTag {

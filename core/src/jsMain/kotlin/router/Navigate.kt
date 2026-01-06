@@ -1,10 +1,5 @@
 package dev.triumphteam.horizon.router
 
-import dev.triumphteam.horizon.Application
-import dev.triumphteam.horizon.html.HtmlConsumer
-import dev.triumphteam.horizon.html.tag.ATag
-import dev.triumphteam.horizon.html.tag.HtmlMarker
-import dev.triumphteam.horizon.html.tag.a
 import kotlinx.browser.window
 
 @PublishedApi
@@ -35,7 +30,7 @@ internal fun resolveRelativePath(to: String): String {
 
 }
 
-@HtmlMarker
+/*@HtmlMarker
 public inline fun HtmlConsumer.navigate(to: String, crossinline block: ATag.() -> Unit = {}) {
     val resolvedPath = resolveRelativePath(to)
     a {
@@ -46,4 +41,4 @@ public inline fun HtmlConsumer.navigate(to: String, crossinline block: ATag.() -
         }
         block()
     }
-}
+}*/

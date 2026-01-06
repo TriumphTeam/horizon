@@ -1,4 +1,4 @@
-package dev.triumphteam.horizon.html.tag.attributes
+package dev.triumphteam.horizon.html.attributes
 
 public enum class ReferrerPolicy(public val value: String) {
     NO_REFERRER("no-referrer"),

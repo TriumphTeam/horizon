@@ -1,4 +1,4 @@
-package dev.triumphteam.horizon.html.tag.attributes
+package dev.triumphteam.horizon.html.attributes
 
 public object HtmlAttributes {
     /** Global Attributes */

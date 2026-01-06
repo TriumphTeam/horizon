@@ -15,7 +15,6 @@ kotlin {
     sourceSets {
         jsMain {
             dependencies {
-                api(projects.horizonHtml)
                 api(kotlin("stdlib-js"))
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
