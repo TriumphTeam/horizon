@@ -1,24 +1,24 @@
 package dev.triumphteam.horizon.component.functional
 
-import dev.triumphteam.horizon.component.ComponentRender
+import dev.triumphteam.horizon.component.ComponentRenderFunction
 
 public interface FunctionalComponent : StateHolder {
 
     // @HtmlMarker
-    public fun render(block: ComponentRender)
+    public fun render(block: ComponentRenderFunction)
 }
 
 @PublishedApi
 internal class SimpleFunctionalComponent : AbstractStateHolder(), FunctionalComponent {
 
-    private var render: ComponentRender? = null
+    private var render: ComponentRenderFunction? = null
 
-    override fun render(block: ComponentRender) {
+    override fun render(block: ComponentRenderFunction) {
         this.render = block
     }
 
     @PublishedApi
-    internal fun getComponentRender(): ComponentRender = render ?: {}
+    internal fun getComponentRender(): ComponentRenderFunction = render ?: {}
 }
 
 /*@PublishedApi

@@ -1,6 +1,10 @@
 package dev.triumphteam.horizon
 
+import dev.triumphteam.horizon.html.a
+import dev.triumphteam.horizon.html.br
 import dev.triumphteam.horizon.html.div
+import dev.triumphteam.horizon.router.navigate
+import kotlinx.browser.window
 
 public fun main() {
     app {
@@ -9,18 +13,18 @@ public fun main() {
             div {
                 text("Rendering example route")
 
-                /*onClick = {
+                onClick = {
                     window.alert("Kotlin!")
-                }*/
+                }
             }
 
-            /*navigate(to = "/example2") {
+            navigate(to = "/example2") {
                 text("Example 2!")
             }
 
             navigate(to = "/with-variable/example") {
                 text("Navigation to example with variable!")
-            }*/
+            }
         }
 
 
@@ -30,26 +34,26 @@ public fun main() {
 
                 text("Rendering example route 2")
 
-                /*onClick = { event ->
+                onClick = { event ->
                     window.alert("Kotlin!")
-                }*/
+                }
             }
 
-            /*navigate(to = "/example") {
+            navigate(to = "/example") {
                 text("Example!")
             }
 
-            br()
+            // br()
 
             navigate(to = "/with-variable/example") {
                 text("Example with variable!")
-            }*/
+            }
         }
 
-        /*route("with-variable/:variable") { route ->
+        route("with-variable/:variable") { route ->
             div(id = "parent-div") {
                 // id = "parent-div"
-                component {
+                /*component {
 
                     val variable by remember(route["variable"])
 
@@ -80,7 +84,7 @@ public fun main() {
                             }
                         }
                     }
-                }
+                }*/
             }
 
             br()
@@ -108,7 +112,7 @@ public fun main() {
 
             br()
 
-            component {
+            /*component {
 
                 var clicks by remember(0)
 
@@ -124,7 +128,7 @@ public fun main() {
                         text("Click me!")
                     }
                 }
-            }
+            }*/
 
             div {
                 div {
@@ -132,12 +136,7 @@ public fun main() {
                 }
                 text("buh")
             }
-        }*/
-
-        /* routes<Test> {
-
-         }*/
-        println("hello-world")
+        }
     }
 }
 

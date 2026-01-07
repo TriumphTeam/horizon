@@ -1,5 +1,11 @@
 package dev.triumphteam.horizon.router
 
+import dev.triumphteam.horizon.Application
+import dev.triumphteam.horizon.html.ATag
+import dev.triumphteam.horizon.html.FlowContent
+import dev.triumphteam.horizon.html.Tag
+import dev.triumphteam.horizon.html.TagMarker
+import dev.triumphteam.horizon.html.a
 import kotlinx.browser.window
 
 @PublishedApi
@@ -30,10 +36,10 @@ internal fun resolveRelativePath(to: String): String {
 
 }
 
-/*@HtmlMarker
-public inline fun HtmlConsumer.navigate(to: String, crossinline block: ATag.() -> Unit = {}) {
+@TagMarker
+public inline fun FlowContent.navigate(to: String, crossinline block: ATag.() -> Unit = {}): Tag {
     val resolvedPath = resolveRelativePath(to)
-    a {
+    return a {
         href = resolveRelativePath(to)
         onClick = { event ->
             event.preventDefault()
@@ -41,4 +47,4 @@ public inline fun HtmlConsumer.navigate(to: String, crossinline block: ATag.() -
         }
         block()
     }
-}*/
+}

@@ -2,21 +2,32 @@
 
 package dev.triumphteam.horizon.html
 
+import dev.triumphteam.horizon.component.Component
+import dev.triumphteam.horizon.html.attributes.TagWithDownloadAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithHrefAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithHrefLangAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithMediaAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithReferrerPolicyAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithRelAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithTargetAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithTypeAttribute
 import kotlinx.browser.document
 import org.w3c.dom.Element
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-public interface Tag {
-
-    public val parent: FlowContent
-    public val tagName: String
+public interface FlowChild {
+    public val parentComponent: Component
     public val element: Element
 }
 
+public interface Tag : FlowChild {
+    public val tagName: String
+}
+
 public abstract class AbstractTag(
-    override val parent: FlowContent,
     override val tagName: String,
+    override val parentComponent: Component,
     initialAttributes: Map<String, String> = emptyMap(),
 ) : TagAttributeScope() {
     override val element: Element = document.createElement(tagName)
@@ -26,18 +37,18 @@ public abstract class AbstractTag(
     }
 }
 
-public interface FlowContent {
+public interface FlowContent : FlowChild {
 
     public val children: MutableList<Tag>
 
     public fun appendChild(child: Tag)
 }
 
-public abstract class AbstractFlowTag(
-    parent: FlowContent,
+public abstract class FlowTag(
     tagName: String,
+    parentComponent: Component,
     initialAttributes: Map<String, String> = emptyMap(),
-) : AbstractTag(parent, tagName, initialAttributes), FlowContent {
+) : AbstractTag(tagName, parentComponent, initialAttributes), FlowContent {
 
     override val children: MutableList<Tag> = mutableListOf()
 
@@ -51,28 +62,64 @@ public abstract class AbstractFlowTag(
     }
 }
 
-public class FlowContentBuilder : FlowContent {
+public class FlowContentBuilder(
+    override val parentComponent: Component,
+) : FlowContent {
+    override val element: Element
+        get() = error("Root tag has no parent component")
+
     override val children: MutableList<Tag> = mutableListOf()
     override fun appendChild(child: Tag) {
         children.add(child)
     }
 }
 
-public class SimpleHtmlTag(
-    parent: FlowContent,
+public class SimpleTag(
     tagName: String,
+    parentComponent: Component,
     initialAttributes: Map<String, String> = emptyMap(),
-) : AbstractFlowTag(parent, tagName, initialAttributes)
+) : AbstractTag(tagName, parentComponent, initialAttributes)
 
-public inline fun createHtml(block: FlowContent.() -> Unit): List<Tag> {
+public class SimpleFlowTag(
+    tagName: String,
+    parentComponent: Component,
+    initialAttributes: Map<String, String> = emptyMap(),
+) : FlowTag(tagName, parentComponent, initialAttributes)
+
+public class ATag(
+    parentComponent: Component,
+    initialAttributes: Map<String, String> = emptyMap(),
+) : FlowTag("a", parentComponent, initialAttributes), TagWithDownloadAttribute, TagWithHrefAttribute,
+    TagWithHrefLangAttribute, TagWithMediaAttribute, TagWithRelAttribute, TagWithTargetAttribute, TagWithTypeAttribute,
+    TagWithReferrerPolicyAttribute
+
+public inline fun createHtml(
+    parentComponent: Component,
+    block: FlowContent.() -> Unit,
+): List<Tag> {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return FlowContentBuilder().apply(block).children
+    return FlowContentBuilder(parentComponent).apply(block).children
 }
 
-@TagDslMarker
-public inline fun FlowContent.div(block: AbstractFlowTag.() -> Unit): Tag {
+@TagMarker
+public inline fun FlowContent.div(id: String? = null, block: FlowTag.() -> Unit): Tag {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return SimpleHtmlTag(this, "div").apply(block).also {
+    return SimpleFlowTag("div", parentComponent).apply(block).also {
+        appendChild(it)
+    }
+}
+
+@TagMarker
+public inline fun FlowContent.a(block: ATag.() -> Unit): Tag {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return ATag(parentComponent).apply(block).also {
+        appendChild(it)
+    }
+}
+
+@TagMarker
+public inline fun FlowContent.br(): Tag {
+    return SimpleFlowTag("br", parentComponent).also {
         appendChild(it)
     }
 }

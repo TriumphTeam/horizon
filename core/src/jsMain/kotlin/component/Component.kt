@@ -1,6 +1,5 @@
 package dev.triumphteam.horizon.component
 
-import dev.triumphteam.horizon.dom.safeRemoveChild
 import dev.triumphteam.horizon.html.FlowContent
 import dev.triumphteam.horizon.html.Tag
 import dev.triumphteam.horizon.html.createHtml
@@ -10,7 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import org.w3c.dom.Node
 import kotlin.coroutines.CoroutineContext
 
-internal typealias ComponentRender = FlowContent.() -> Unit
+internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
 public interface Component : CoroutineScope {
 
@@ -29,7 +28,7 @@ public interface Component : CoroutineScope {
 internal class ReactiveComponent(
     private val boundNode: Node,
     private val lastElementAtCreation: Node?,
-    private val render: ComponentRender,
+    private val renderFunction: ComponentRenderFunction,
     private val states: List<State<*>>,
 ) : Component {
 
@@ -63,11 +62,9 @@ internal class ReactiveComponent(
 
     override fun mount(): List<Tag> {
         // Create elements for this component.
-        return renderedElements ?: createHtml(render)
-        //createHorizonElements(this, boundNode, render)
-        /*.also {
+        return renderedElements ?: createHtml(this, renderFunction).also {
             renderedElements = it
-        } // Cache it after rendering.*/
+        } // Cache it after mounting.*/
     }
 
     override fun update() {
@@ -123,5 +120,11 @@ internal class ReactiveComponent(
 
     override fun addChild(component: Component) {
         children += component
+    }
+}
+
+internal fun Node.safeRemoveChild(child: Node) {
+    if (child.parentNode == this) {
+        removeChild(child)
     }
 }

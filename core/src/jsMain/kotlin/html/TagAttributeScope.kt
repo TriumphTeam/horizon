@@ -54,6 +54,8 @@ import dev.triumphteam.horizon.html.attributes.Target
 import dev.triumphteam.horizon.html.attributes.getAttribute
 import dev.triumphteam.horizon.html.attributes.setAttribute
 import kotlinx.browser.document
+import org.w3c.dom.Element
+import org.w3c.dom.events.Event
 
 public abstract class TagAttributeScope : Tag {
 
@@ -376,4 +378,15 @@ public abstract class TagAttributeScope : Tag {
     public inline var ScriptTag.integrity: String?
         get() = getAttribute(HtmlAttributes.INTEGRITY)
         set(value) = setAttribute(HtmlAttributes.INTEGRITY, value)*/
+
+    public inline var Tag.onClick: (Event) -> Unit
+        get() = error("Tried to `get()` OnClick function, which is not allowed.")
+        set(noinline newValue) {
+            element.setEvent("onclick", newValue)
+        }
+}
+
+@PublishedApi
+internal inline fun Element.setEvent(name: String, noinline callback: (Event) -> Unit) {
+    asDynamic()[name] = callback
 }

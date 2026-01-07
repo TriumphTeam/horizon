@@ -92,7 +92,7 @@ internal class Router(private val rootElement: Element) {
             component = ReactiveComponent(
                 boundNode = rootElement,
                 lastElementAtCreation = null,
-                render = {
+                renderFunction = {
                     parsedRoute.route.block.invoke(this, variablesRoute)
                 },
                 states = emptyList(),
