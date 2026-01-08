@@ -1,7 +1,9 @@
 package dev.triumphteam.horizon
 
+import dev.triumphteam.horizon.component.functional.component
 import dev.triumphteam.horizon.html.a
 import dev.triumphteam.horizon.html.br
+import dev.triumphteam.horizon.html.button
 import dev.triumphteam.horizon.html.div
 import dev.triumphteam.horizon.router.navigate
 import kotlinx.browser.window
@@ -52,9 +54,9 @@ public fun main() {
 
         route("with-variable/:variable") { route ->
             div(id = "parent-div") {
-                // id = "parent-div"
-                /*component {
-
+                id = "parent-div"
+                component {
+                    println("upper component")
                     val variable by remember(route["variable"])
 
                     render {
@@ -84,7 +86,7 @@ public fun main() {
                             }
                         }
                     }
-                }*/
+                }
             }
 
             br()
@@ -112,8 +114,9 @@ public fun main() {
 
             br()
 
-            /*component {
-
+            println("child element: ${element.lastChild}")
+            component {
+                println("under component")
                 var clicks by remember(0)
 
                 render {
@@ -128,7 +131,7 @@ public fun main() {
                         text("Click me!")
                     }
                 }
-            }*/
+            }
 
             div {
                 div {

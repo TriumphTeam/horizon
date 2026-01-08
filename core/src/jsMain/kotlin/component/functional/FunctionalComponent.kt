@@ -1,6 +1,10 @@
 package dev.triumphteam.horizon.component.functional
 
 import dev.triumphteam.horizon.component.ComponentRenderFunction
+import dev.triumphteam.horizon.component.ReactiveComponent
+import dev.triumphteam.horizon.html.FlowContent
+import dev.triumphteam.horizon.html.TagMarker
+import dev.triumphteam.horizon.state.AbstractMutableState
 
 public interface FunctionalComponent : StateHolder {
 
@@ -21,22 +25,33 @@ internal class SimpleFunctionalComponent : AbstractStateHolder(), FunctionalComp
     internal fun getComponentRender(): ComponentRenderFunction = render ?: {}
 }
 
-/*@PublishedApi
-internal class ComponentTag(
-    parentRenderer: HtmlRenderer,
-    internal val boundNode: Element?,
-    internal val functionalComponent: SimpleFunctionalComponent,
-    override val attributes: MutableMap<String, String> = mutableMapOf(),
-) : CustomHtmlConsumerTag(parentRenderer) {
-    override val tagName: String = "component"
-    override val isVoid: Boolean = false
-}
+@TagMarker
+public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
+    val functionalComponent = SimpleFunctionalComponent().apply(block)
+    val states = functionalComponent.getStates()
 
-@HtmlMarker
-public inline fun HtmlConsumer.component(block: FunctionalComponent.() -> Unit) {
-    ComponentTag(
-        parentRenderer = renderer,
-        boundNode = (parentRenderer as? HorizonRenderer)?.current,
-        functionalComponent = SimpleFunctionalComponent().apply(block),
-    ).visit {}
-}*/
+    println("making component on tag: ${element.nodeName}, with id: ${element.id}")
+    // Create the component.
+    val component = ReactiveComponent(
+        boundNode = element,
+        renderFunction = functionalComponent.getComponentRender(),
+        states = states,
+    )
+
+    // Make sure the parent knows about this component.
+
+    parentComponent.addChild(component)
+
+    states.forEach { state ->
+        if (state is AbstractMutableState) {
+            state.addListener(component) {
+                component.cleanUpDom()
+                component.update()
+            }
+        }
+    }
+
+    // Then mount it.
+    // TODO
+    component.update()
+}

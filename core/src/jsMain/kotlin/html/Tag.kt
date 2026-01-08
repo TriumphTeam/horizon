@@ -3,14 +3,20 @@
 package dev.triumphteam.horizon.html
 
 import dev.triumphteam.horizon.component.Component
+import dev.triumphteam.horizon.html.attributes.TagWithAutoFocusAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithDisabledAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithDownloadAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithFormActionAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithFormAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithHrefAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithHrefLangAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithMediaAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithNameAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithReferrerPolicyAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithRelAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithTargetAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithTypeAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithValueAttribute
 import kotlinx.browser.document
 import org.w3c.dom.Element
 import kotlin.contracts.InvocationKind
@@ -39,8 +45,6 @@ public abstract class AbstractTag(
 
 public interface FlowContent : FlowChild {
 
-    public val children: MutableList<Tag>
-
     public fun appendChild(child: Tag)
 }
 
@@ -50,27 +54,23 @@ public abstract class FlowTag(
     initialAttributes: Map<String, String> = emptyMap(),
 ) : AbstractTag(tagName, parentComponent, initialAttributes), FlowContent {
 
-    override val children: MutableList<Tag> = mutableListOf()
-
     public inline fun text(text: String) {
         element.appendChild(document.createTextNode(text))
     }
 
     override fun appendChild(child: Tag) {
-        children.add(child)
         element.appendChild(child.element)
     }
 }
 
 public class FlowContentBuilder(
     override val parentComponent: Component,
+    override val element: Element,
+    private val onTagCreation: (Tag) -> Unit,
 ) : FlowContent {
-    override val element: Element
-        get() = error("Root tag has no parent component")
 
-    override val children: MutableList<Tag> = mutableListOf()
     override fun appendChild(child: Tag) {
-        children.add(child)
+        onTagCreation(child)
     }
 }
 
@@ -93,12 +93,24 @@ public class ATag(
     TagWithHrefLangAttribute, TagWithMediaAttribute, TagWithRelAttribute, TagWithTargetAttribute, TagWithTypeAttribute,
     TagWithReferrerPolicyAttribute
 
+public class ButtonTag(
+    parentComponent: Component,
+    initialAttributes: Map<String, String> = emptyMap(),
+) : FlowTag("button", parentComponent, initialAttributes), TagWithAutoFocusAttribute, TagWithDisabledAttribute,
+    TagWithFormAttribute, TagWithFormActionAttribute, TagWithTypeAttribute, TagWithNameAttribute,
+    TagWithValueAttribute {
+
+    // TODO: Some extra attributes.
+}
+
 public inline fun createHtml(
     parentComponent: Component,
+    element: Element,
     block: FlowContent.() -> Unit,
-): List<Tag> {
+    noinline onTagCreation: (Tag) -> Unit,
+) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return FlowContentBuilder(parentComponent).apply(block).children
+    FlowContentBuilder(parentComponent, element, onTagCreation).apply(block)
 }
 
 @TagMarker
@@ -113,6 +125,14 @@ public inline fun FlowContent.div(id: String? = null, block: FlowTag.() -> Unit)
 public inline fun FlowContent.a(block: ATag.() -> Unit): Tag {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return ATag(parentComponent).apply(block).also {
+        appendChild(it)
+    }
+}
+
+@TagMarker
+public inline fun FlowContent.button(block: ButtonTag.() -> Unit): Tag {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return ButtonTag(parentComponent).apply(block).also {
         appendChild(it)
     }
 }

@@ -6,14 +6,13 @@ import dev.triumphteam.horizon.html.createHtml
 import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.State
 import kotlinx.coroutines.CoroutineScope
+import org.w3c.dom.Element
 import org.w3c.dom.Node
 import kotlin.coroutines.CoroutineContext
 
 internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
 public interface Component : CoroutineScope {
-
-    public fun mount(): List<Tag>
 
     public fun unmount()
 
@@ -26,13 +25,14 @@ public interface Component : CoroutineScope {
 
 @PublishedApi
 internal class ReactiveComponent(
-    private val boundNode: Node,
-    private val lastElementAtCreation: Node?,
+    private val boundNode: Element,
     private val renderFunction: ComponentRenderFunction,
     private val states: List<State<*>>,
 ) : Component {
 
-    private var renderedElements: List<Tag>? = null
+    private val lastElementAtCreation: Node? = boundNode.lastChild
+
+    private var renderedElements: MutableList<Tag> = mutableListOf()
     private val children: MutableList<Component> = mutableListOf()
 
     override val coroutineContext: CoroutineContext
@@ -54,22 +54,15 @@ internal class ReactiveComponent(
     }
 
     override fun cleanUpDom() {
-        renderedElements?.forEach { tag ->
+        renderedElements.forEach { tag ->
             boundNode.safeRemoveChild(tag.element)
         }
-        renderedElements = null
-    }
-
-    override fun mount(): List<Tag> {
-        // Create elements for this component.
-        return renderedElements ?: createHtml(this, renderFunction).also {
-            renderedElements = it
-        } // Cache it after mounting.*/
+        renderedElements.clear()
     }
 
     override fun update() {
         // Create elements for this component.
-        val elements = mount()
+
 
         // Scenario A
         // - this
@@ -87,20 +80,32 @@ internal class ReactiveComponent(
         // Last element div
         // Find the element after and prepend or append.
 
+        fun createAndAppendElements(target: Node? = null) {
+            createHtml(parentComponent = this, element = boundNode, block = renderFunction) { tag ->
+                when {
+                    target == null -> boundNode.appendChild(tag.element)
+                    else -> boundNode.insertBefore(tag.element, target)
+                }
+
+                renderedElements.add(tag)
+            }
+        }
+
         // If this is null, it means we are the first element.
         val lastElement = lastElementAtCreation
+
         if (lastElement == null) {
             // Check if a first child exists.
             val firstElement = boundNode.firstChild
 
             // If it doesn't, we append as if we're the only elements.
             if (firstElement == null) {
-                elements.forEach { boundNode.appendChild(it.element) }
+                createAndAppendElements()
                 return
             }
 
             // If we have a first element, we insert before it.
-            elements.forEach { tag -> boundNode.insertBefore(tag.element, firstElement) }
+            createAndAppendElements(firstElement)
             return
         }
 
@@ -110,12 +115,12 @@ internal class ReactiveComponent(
 
         // If no sibling exists, we append as if we're the last element.
         if (elementAfter == null) {
-            elements.forEach { boundNode.appendChild(it.element) }
+            createAndAppendElements()
             return
         }
 
         // If we do have it, we insert before it.
-        elements.forEach { tag -> boundNode.insertBefore(tag.element, elementAfter) }
+        createAndAppendElements(elementAfter)
     }
 
     override fun addChild(component: Component) {

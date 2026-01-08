@@ -91,7 +91,6 @@ internal class Router(private val rootElement: Element) {
             segmentedRoute = parsedRoute.route,
             component = ReactiveComponent(
                 boundNode = rootElement,
-                lastElementAtCreation = null,
                 renderFunction = {
                     parsedRoute.route.block.invoke(this, variablesRoute)
                 },
