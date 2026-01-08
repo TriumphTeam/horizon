@@ -6,9 +6,14 @@ import dev.triumphteam.horizon.html.createHtml
 import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.State
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
@@ -29,8 +34,8 @@ internal abstract class AbstractComponent(
 
     protected val children: MutableList<Component> = mutableListOf()
 
-    override val coroutineContext: CoroutineContext
-        get() = TODO("Not yet implemented")
+    override val coroutineContext: CoroutineContext =
+        SupervisorJob() + Dispatchers.Default
 
     override fun refresh() {
         clear()
@@ -45,6 +50,9 @@ internal abstract class AbstractComponent(
             }
         }
 
+        // When being destroyed, we have to cancel all coroutines running.
+        cancel()
+
         // Then clear the component.
         clear()
     }
@@ -56,7 +64,6 @@ internal abstract class AbstractComponent(
     protected open fun clear() {
         // Destroy all children first.
         children.forEach(Component::destroy)
-        // Then clear the list so it can be reused.
         children.clear()
     }
 }

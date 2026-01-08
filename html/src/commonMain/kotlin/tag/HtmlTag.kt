@@ -47,29 +47,6 @@ public class SimpleTag(
     override val isVoid: Boolean,
 ) : HtmlConsumerTag(parentRenderer)
 
-public class ATag(
-    parentRenderer: HtmlRenderer,
-    override val attributes: MutableMap<String, String>,
-) : HtmlConsumerTag(parentRenderer), HtmlTagWithDownloadAttribute, HtmlTagWithHrefAttribute,
-    HtmlTagWithHrefLangAttribute,
-    HtmlTagWithMediaAttribute, HtmlTagWithRelAttribute, HtmlTagWithTargetAttribute, HtmlTagWithTypeAttribute,
-    HtmlTagWithReferrerPolicyAttribute {
-
-    override val tagName: String = "a"
-    override val isVoid: Boolean = false
-}
-
-public class AreaTag(
-    override val parentRenderer: HtmlRenderer,
-    override val attributes: MutableMap<String, String>,
-) : HtmlScope(), HtmlTagWithAltAttribute, HtmlTagWithDownloadAttribute, HtmlTagWithHrefAttribute,
-    HtmlTagWithHrefLangAttribute, HtmlTagWithMediaAttribute, HtmlTagWithRelAttribute, HtmlTagWithTargetAttribute,
-    HtmlTagWithTypeAttribute, HtmlTagWithReferrerPolicyAttribute {
-
-    override val tagName: String = "area"
-    override val isVoid: Boolean = true
-}
-
 public class AudioTag(
     parentRenderer: HtmlRenderer,
     override val attributes: MutableMap<String, String>,
@@ -77,15 +54,6 @@ public class AudioTag(
 
     override val tagName: String = "audio"
     override val isVoid: Boolean = false
-}
-
-public class BaseTag(
-    override val parentRenderer: HtmlRenderer,
-    override val attributes: MutableMap<String, String>,
-) : HtmlScope(), HtmlTagWithHrefAttribute, HtmlTagWithTargetAttribute {
-
-    override val tagName: String = "base"
-    override val isVoid: Boolean = true
 }
 
 public class BlockQuoteTag(
@@ -119,32 +87,7 @@ public class CanvasTag(
     override val isVoid: Boolean = false
 }
 
-public class ImgTag(
-    override val parentRenderer: HtmlRenderer,
-    override val attributes: MutableMap<String, String>,
-) : HtmlScope(), HtmlTagWithAltAttribute, HtmlTagWithHeightAttribute, HtmlTagWithWidthAttribute,
-    HtmlTagWithReferrerPolicyAttribute, HtmlTagWithSizesAttribute, HtmlTagWithSrcAttribute {
 
-    override val tagName: String = "img"
-    override val isVoid: Boolean = true
-
-    // TODO: Some extra attributes.
-}
-
-public class InputTag(
-    override val parentRenderer: HtmlRenderer,
-    override val attributes: MutableMap<String, String>,
-) : HtmlScope(), HtmlTagWithAltAttribute, HtmlTagWithAutocompleteAttribute, HtmlTagWithAutoFocusAttribute,
-    HtmlTagWithDisabledAttribute, HtmlTagWithFormAttribute, HtmlTagWithFormActionAttribute, HtmlTagWithHeightAttribute,
-    HtmlTagWithWidthAttribute, HtmlTagWithMaxAttribute, HtmlTagWithMinAttribute, HtmlTagWithPlaceholderAttribute,
-    HtmlTagWithNameAttribute, HtmlTagWithReadOnlyAttribute, HtmlTagWithRequiredAttribute, HtmlTagWithSizeAttribute,
-    HtmlTagWithSrcAttribute, HtmlTagWithTypeAttribute, HtmlTagWithValueAttribute {
-
-    override val tagName: String = "input"
-    override val isVoid: Boolean = true
-
-    // TODO: Some extra attributes.
-}
 
 public class LabelTag(
     parentRenderer: HtmlRenderer,

@@ -2,7 +2,6 @@
 
 package dev.triumphteam.horizon.state
 
-import dev.triumphteam.horizon.component.Component
 import dev.triumphteam.horizon.component.ReactiveElement
 import dev.triumphteam.horizon.state.policy.StateMutationPolicy
 import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
@@ -22,12 +21,14 @@ public abstract class AbstractMutableState<T> : MutableState<T> {
 
     private val listeners: MutableMap<ReactiveElement, () -> Unit> = mutableMapOf()
 
-    internal fun addListener(component: ReactiveElement, listener: () -> Unit) {
-        listeners[component] = listener
+    @PublishedApi
+    internal fun addListener(element: ReactiveElement, listener: () -> Unit) {
+        listeners[element] = listener
     }
 
-    internal fun removeListener(component: ReactiveElement) {
-        listeners.remove(component)
+    @PublishedApi
+    internal fun removeListener(element: ReactiveElement) {
+        listeners.remove(element)
     }
 
     protected fun update() {

@@ -6,7 +6,14 @@ import dev.triumphteam.horizon.html.br
 import dev.triumphteam.horizon.html.button
 import dev.triumphteam.horizon.html.div
 import dev.triumphteam.horizon.router.navigate
+import dev.triumphteam.horizon.state.mutableStateOf
 import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 
 public fun main() {
     app {
@@ -85,6 +92,53 @@ public fun main() {
                                 }
                             }
                         }
+
+                        val testState = mutableStateOf("text-red-400")
+
+                        val div = div {
+                            val testStateValue by testState
+                            className = testStateValue
+                            text("This is a reactive attribute")
+                        }
+                        br()
+                        component {
+                            val testStateValue by remember(testState)
+
+                            render {
+
+                                parentComponent.launch {
+                                    delay(5.seconds)
+                                    println("testStateValue: $testStateValue")
+                                }
+
+                                div.element.className = testStateValue
+                            }
+                        }
+                        button {
+                            var testStateValue by testState
+                            onClick = {
+                                testStateValue = "text-blue-400"
+                            }
+
+                            text("blue")
+                        }
+                        button {
+                            var testStateValue by testState
+                            onClick = {
+                                testStateValue = "text-red-400"
+                            }
+
+                            text("red")
+                        }
+                        button {
+                            var testStateValue by testState
+                            onClick = {
+                                testStateValue = "text-purple-400"
+                            }
+
+                            text("purple")
+                        }
+
                     }
                 }
             }

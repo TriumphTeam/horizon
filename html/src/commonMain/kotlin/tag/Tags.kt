@@ -3,28 +3,9 @@ package dev.triumphteam.horizon.html.tag
 import dev.triumphteam.horizon.html.HtmlConsumer
 import dev.triumphteam.horizon.html.HtmlConsumerTag
 import dev.triumphteam.horizon.html.tag.attributes.HtmlAttributes
+import dev.triumphteam.horizon.html.tag.withAttributes
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-
-
-@HtmlMarker
-public inline fun HtmlConsumer.a(
-    id: String? = null,
-    className: String? = null,
-    href: String? = null,
-    attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: ATag.() -> Unit = {},
-) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    ATag(
-        parentRenderer = renderer,
-        attributes = attributes.withAttributes(
-            HtmlAttributes.ID to id,
-            HtmlAttributes.CLASS to className,
-            HtmlAttributes.HREF to href,
-        ),
-    ).visit(block)
-}
 
 @HtmlMarker
 public inline fun HtmlConsumer.abbr(
@@ -46,23 +27,6 @@ public inline fun HtmlConsumer.address(
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("address", id, className, attributes, isVoid = false, block)
-}
-
-@HtmlMarker
-public inline fun HtmlConsumer.area(
-    id: String? = null,
-    className: String? = null,
-    attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: AreaTag.() -> Unit = {},
-) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    AreaTag(
-        parentRenderer = renderer,
-        attributes = attributes.withAttributes(
-            HtmlAttributes.ID to id,
-            HtmlAttributes.CLASS to className,
-        ),
-    ).visit(block)
 }
 
 @HtmlMarker
@@ -354,42 +318,6 @@ public inline fun HtmlConsumer.i(
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     simpleTag("i", id, className, attributes, isVoid = false, block)
-}
-
-@HtmlMarker
-public inline fun HtmlConsumer.img(
-    id: String? = null,
-    className: String? = null,
-    src: String? = null,
-    attributes: MutableMap<String, String> = mutableMapOf(),
-    @HtmlMarker crossinline block: ImgTag.() -> Unit = {},
-) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    ImgTag(
-        parentRenderer = renderer,
-        attributes = attributes.withAttributes(
-            HtmlAttributes.ID to id,
-            HtmlAttributes.CLASS to className,
-            HtmlAttributes.SRC to src,
-        ),
-    ).visit(block)
-}
-
-@HtmlMarker
-public inline fun HtmlConsumer.input(
-    id: String? = null,
-    className: String? = null,
-    attributes: MutableMap<String, String> = mutableMapOf(),
-    crossinline block: InputTag.() -> Unit = {},
-) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    InputTag(
-        parentRenderer = renderer,
-        attributes = attributes.withAttributes(
-            HtmlAttributes.ID to id,
-            HtmlAttributes.CLASS to className,
-        ),
-    ).visit(block)
 }
 
 @HtmlMarker
