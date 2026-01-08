@@ -55,7 +55,7 @@ public inline fun FlowContent.base(
 }
 
 @TagMarker
-public inline fun FlowContent.br(block: TagAttributeScope.() -> Unit): Tag {
+public inline fun FlowContent.br(block: TagAttributeScope.() -> Unit = {}): Tag {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return tag(VoidTag("br", parentComponent), block)
 }

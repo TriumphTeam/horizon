@@ -41,6 +41,7 @@ public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
     // Make sure the parent knows about this component.
     parentComponent.addChild(component)
 
+    // Make sure the states refresh the component correctly.
     states.forEach { state ->
         if (state is AbstractMutableState) {
             state.addListener(component) {
@@ -49,7 +50,6 @@ public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
         }
     }
 
-    // Then mount it.
-    // TODO
+    // Initial render of the component.
     component.render()
 }

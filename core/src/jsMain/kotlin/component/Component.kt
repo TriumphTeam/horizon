@@ -7,22 +7,26 @@ import dev.triumphteam.horizon.state.AbstractMutableState
 import dev.triumphteam.horizon.state.State
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
 public interface Component : ReactiveElement, CoroutineScope {
 
+    /**
+     * The render function is responsible for adding elements directly to the DOM.
+     * The rendering is done at initialization and whenever the component's state changes.
+     */
     public fun render()
 
+    /** Refresh is a combination of clearing the component and its children and then rendering it again. */
     public fun refresh()
 
+    /** Destruction is the final step of the component, clearing everything related to it and removing state listeners. */
     public fun destroy()
 
     public fun addChild(component: Component)

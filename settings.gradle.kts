@@ -23,7 +23,6 @@ plugins {
 
 projects {
     single(id = "core")
-    single(id = "html")
 
     single(id = "testing")
 }

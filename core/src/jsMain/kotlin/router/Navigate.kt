@@ -1,11 +1,11 @@
 package dev.triumphteam.horizon.router
 
 import dev.triumphteam.horizon.Application
-import dev.triumphteam.horizon.html.ATag
 import dev.triumphteam.horizon.html.FlowContent
 import dev.triumphteam.horizon.html.Tag
 import dev.triumphteam.horizon.html.TagMarker
 import dev.triumphteam.horizon.html.a
+import dev.triumphteam.horizon.html.element.ATag
 import kotlinx.browser.window
 
 @PublishedApi
