@@ -7,6 +7,7 @@ dependencyResolutionManagement {
 
 pluginManagement {
     repositories {
+        mavenCentral()
         gradlePluginPortal()
         maven("https://repo.triumphteam.dev/releases")
     }
@@ -17,7 +18,7 @@ rootProject.name = "horizon"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 plugins {
-    id("dev.triumphteam.root.settings") version "0.0.31"
+    id("dev.triumphteam.root.settings") version "0.0.39"
 }
 
 projects {

@@ -1,139 +1,159 @@
 package dev.triumphteam.horizon.component
 
-import dev.triumphteam.horizon.dom.DOMBuilder
+import dev.triumphteam.horizon.html.FlowContent
+import dev.triumphteam.horizon.html.Tag
+import dev.triumphteam.horizon.html.createHtml
 import dev.triumphteam.horizon.state.AbstractMutableState
-import dev.triumphteam.horizon.state.MutableState
-import dev.triumphteam.horizon.state.SimpleMutableState
-import kotlinx.html.HtmlTagMarker
-import kotlinx.html.Tag
-import kotlinx.html.TagConsumer
-import kotlinx.html.consumers.onFinalize
-import kotlinx.html.visitAndFinalize
-import org.w3c.dom.HTMLElement
+import dev.triumphteam.horizon.state.State
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import org.w3c.dom.Element
 import org.w3c.dom.Node
+import kotlin.coroutines.CoroutineContext
 
-internal typealias ComponentRender = TagConsumer<HTMLElement>.() -> Unit
+internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
-@PublishedApi
-internal interface Component {
+public interface Component : ReactiveElement, CoroutineScope {
 
-    fun unmount()
+    /**
+     * The render function is responsible for adding elements directly to the DOM.
+     * The rendering is done at initialization and whenever the component's state changes.
+     */
+    public fun render()
 
-    fun render()
+    /** Refresh is a combination of clearing the component and its children and then rendering it again. */
+    public fun refresh()
 
-    fun cleanUpDom()
+    /** Destruction is the final step of the component, clearing everything related to it and removing state listeners. */
+    public fun destroy()
 
-    fun renderToDom()
-
-    fun addRenderedChild(component: Component)
+    public fun addChild(component: Component)
 }
 
-@PublishedApi
-internal object EmptyComponent : Component {
-    override fun unmount() {}
-    override fun render() {}
-    override fun cleanUpDom() {}
-    override fun renderToDom() {}
-    override fun addRenderedChild(component: Component) {}
-}
-
-@PublishedApi
-internal class ReactiveComponent(
-    private val parent: Component,
-    private val boundNode: Node,
-    private val render: ComponentRender,
-    private val states: List<MutableState<*>>,
+internal abstract class AbstractComponent(
+    protected val states: List<State<*>>,
 ) : Component {
 
-    private var renderedElements: List<HTMLElement>? = null
-    private val rendered: MutableList<Component> = mutableListOf()
+    protected val children: MutableList<Component> = mutableListOf()
 
-    override fun unmount() {
-        // Unmount child components.
-        rendered.forEach(Component::unmount)
-        // Then the list of previously rendered components.
-        rendered.clear()
+    override val coroutineContext: CoroutineContext =
+        SupervisorJob() + Dispatchers.Default
+
+    override fun refresh() {
+        clear()
+        render()
+    }
+
+    override fun destroy() {
         // Clean up the states.
         states.forEach { state ->
             if (state is AbstractMutableState) {
                 state.removeListener(this)
             }
         }
-        // Then remove itself from the dom.
-        cleanUpDom()
+
+        // When being destroyed, we have to cancel all coroutines running.
+        cancel()
+
+        // Then clear the component.
+        clear()
     }
 
-    override fun cleanUpDom() {
-        renderedElements?.forEach(boundNode::removeChild)
-        renderedElements = null
+    override fun addChild(component: Component) {
+        children += component
     }
+
+    protected open fun clear() {
+        // Destroy all children first.
+        children.forEach(Component::destroy)
+        children.clear()
+    }
+}
+
+@PublishedApi
+internal class ReactiveComponent(
+    private val boundNode: Element,
+    private val parentComponent: Component,
+    private val renderFunction: ComponentRenderFunction,
+    states: List<State<*>>,
+) : AbstractComponent(states) {
+
+    private val lastElementAtCreation: Node? = boundNode.lastChild
+    private val renderedElements: MutableList<Tag> = mutableListOf()
 
     override fun render() {
-        renderToDom()
-        // Tell the parent that this component has been rendered.
-        parent.addRenderedChild(this)
+        // Scenario A
+        // - this
+        // - div
+        // - div
+
+        // Last element null
+        // Get the first element and insert before or append.
+
+        // Scenario B
+        // - div
+        // - this
+        // - div
+
+        // Last element div
+        // Find the element after and prepend or append.
+
+        fun createAndAppendElements(target: Node? = null) {
+            createHtml(parentComponent = this, element = boundNode, renderFunction = renderFunction) { tag ->
+                when {
+                    target == null -> boundNode.appendChild(tag.element)
+                    else -> boundNode.insertBefore(tag.element, target)
+                }
+
+                renderedElements.add(tag)
+            }
+        }
+
+        // If this is null, it means we are the first element.
+        val lastElement = lastElementAtCreation
+
+        if (lastElement == null) {
+            // Check if a first child exists.
+            val firstElement = boundNode.firstChild
+
+            // If it doesn't, we append as if we're the only elements.
+            if (firstElement == null) {
+                createAndAppendElements()
+                return
+            }
+
+            // If we have a first element, we insert before it.
+            createAndAppendElements(firstElement)
+            return
+        }
+
+        // Here we can assume we have a last element.
+        // So we get its next sibling.
+        val elementAfter = lastElement.nextSibling
+
+        // If no sibling exists, we append as if we're the last element.
+        if (elementAfter == null) {
+            createAndAppendElements()
+            return
+        }
+
+        // If we do have it, we insert before it.
+        createAndAppendElements(elementAfter)
     }
 
-    override fun renderToDom() {
-        // Create elements for this component.
-        val elements = renderedElements ?: buildList {
-            DOMBuilder(this@ReactiveComponent).onFinalize { element, partial ->
-                if (!partial) add(element)
-            }.render()
-        }.also { renderedElements = it } // Cache it after rendering.
+    override fun clear() {
+        super.clear()
 
-        // Actually render to dom.
-        elements.forEach(boundNode::appendChild)
-    }
-
-    override fun addRenderedChild(component: Component) {
-        rendered += component
+        // Then also clear the rendered elements.
+        renderedElements.forEach { tag -> boundNode.safeRemoveChild(tag.element) }
+        renderedElements.clear()
     }
 }
 
-public interface FunctionalComponent {
-
-    public fun <T> remember(initialValue: T): MutableState<T>
-
-    public fun render(block: TagConsumer<HTMLElement>.() -> Unit)
-}
-
-@PublishedApi
-internal class SimpleFunctionalComponent : FunctionalComponent {
-
-    private var render: ComponentRender? = null
-    private val states = mutableListOf<MutableState<*>>()
-
-    override fun <T> remember(initialValue: T): MutableState<T> {
-        return SimpleMutableState(initialValue).also(states::add)
+internal fun Node.safeRemoveChild(child: Node) {
+    if (child.parentNode == this) {
+        removeChild(child)
     }
-
-    override fun render(block: ComponentRender) {
-        this.render = block
-    }
-
-    @PublishedApi
-    internal fun getStates(): List<MutableState<*>> = states.toList()
-
-    @PublishedApi
-    internal fun getComponentRender(): ComponentRender = render ?: {}
-}
-
-@PublishedApi
-internal class ComponentTag(
-    override val consumer: TagConsumer<*>,
-    internal val functionalComponent: SimpleFunctionalComponent,
-) : Tag {
-    override val attributes: MutableMap<String, String> = mutableMapOf()
-    override val attributesEntries: Collection<Map.Entry<String, String>> = attributes.entries
-    override val emptyTag: Boolean = true
-    override val inlineTag: Boolean = true
-    override val namespace: String? = null
-    override val tagName: String = "component"
-}
-
-@HtmlTagMarker
-public inline fun <T, C : TagConsumer<T>> C.component(block: FunctionalComponent.() -> Unit) {
-    ComponentTag(this, SimpleFunctionalComponent().apply(block))
-        .visitAndFinalize(this) {}
 }

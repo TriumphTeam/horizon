@@ -1,21 +1,20 @@
 plugins {
     id("horizon.base")
+    id("horizon.library")
 }
 
-kotlin {
-    kotlin {
-        js(IR) {
-            browser()
-            binaries.executable()
-        }
-    }
+root {
+    configureMultiplatform {
+        js {
+            target {
+                nodejs()
+                binaries.library()
+                useEsModules()
+            }
 
-    sourceSets {
-        jsMain {
             dependencies {
                 api(kotlin("stdlib-js"))
-                api("org.jetbrains.kotlinx:kotlinx-html-js:0.12.0")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
         }
     }
