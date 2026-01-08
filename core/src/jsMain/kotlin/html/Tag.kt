@@ -22,6 +22,7 @@ import org.w3c.dom.Element
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+@TagMarker
 public interface FlowChild {
     public val parentComponent: Component
     public val element: Element
@@ -74,12 +75,6 @@ public class FlowContentBuilder(
     }
 }
 
-public class SimpleTag(
-    tagName: String,
-    parentComponent: Component,
-    initialAttributes: Map<String, String> = emptyMap(),
-) : AbstractTag(tagName, parentComponent, initialAttributes)
-
 public class SimpleFlowTag(
     tagName: String,
     parentComponent: Component,
@@ -106,11 +101,11 @@ public class ButtonTag(
 public inline fun createHtml(
     parentComponent: Component,
     element: Element,
-    block: FlowContent.() -> Unit,
+    renderFunction: FlowContent.() -> Unit,
     noinline onTagCreation: (Tag) -> Unit,
 ) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    FlowContentBuilder(parentComponent, element, onTagCreation).apply(block)
+    contract { callsInPlace(renderFunction, InvocationKind.EXACTLY_ONCE) }
+    FlowContentBuilder(parentComponent, element, onTagCreation).apply(renderFunction)
 }
 
 @TagMarker
@@ -139,7 +134,7 @@ public inline fun FlowContent.button(block: ButtonTag.() -> Unit): Tag {
 
 @TagMarker
 public inline fun FlowContent.br(): Tag {
-    return SimpleFlowTag("br", parentComponent).also {
+    return VoidTag("br", parentComponent).also {
         appendChild(it)
     }
 }

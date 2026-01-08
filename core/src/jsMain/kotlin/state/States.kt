@@ -3,6 +3,7 @@
 package dev.triumphteam.horizon.state
 
 import dev.triumphteam.horizon.component.Component
+import dev.triumphteam.horizon.component.ReactiveElement
 import dev.triumphteam.horizon.state.policy.StateMutationPolicy
 import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
 import kotlin.reflect.KProperty
@@ -19,13 +20,13 @@ public interface MutableState<T> : State<T> {
 
 public abstract class AbstractMutableState<T> : MutableState<T> {
 
-    private val listeners: MutableMap<Component, () -> Unit> = mutableMapOf()
+    private val listeners: MutableMap<ReactiveElement, () -> Unit> = mutableMapOf()
 
-    internal fun addListener(component: Component, listener: () -> Unit) {
+    internal fun addListener(component: ReactiveElement, listener: () -> Unit) {
         listeners[component] = listener
     }
 
-    internal fun removeListener(component: Component) {
+    internal fun removeListener(component: ReactiveElement) {
         listeners.remove(component)
     }
 

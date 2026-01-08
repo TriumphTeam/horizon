@@ -53,7 +53,6 @@ import dev.triumphteam.horizon.html.attributes.TagWithWidthAttribute
 import dev.triumphteam.horizon.html.attributes.Target
 import dev.triumphteam.horizon.html.attributes.getAttribute
 import dev.triumphteam.horizon.html.attributes.setAttribute
-import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.events.Event
 

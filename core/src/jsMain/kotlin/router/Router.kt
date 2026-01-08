@@ -1,8 +1,9 @@
 package dev.triumphteam.horizon.router
 
-import dev.triumphteam.horizon.component.Component
-import dev.triumphteam.horizon.component.ReactiveComponent
+import dev.triumphteam.horizon.component.AbstractComponent
+import dev.triumphteam.horizon.component.ComponentRenderFunction
 import dev.triumphteam.horizon.html.FlowContent
+import dev.triumphteam.horizon.html.createHtml
 import dev.triumphteam.horizon.html.div
 import dev.triumphteam.horizon.state.SimpleMutableState
 import dev.triumphteam.horizon.state.State
@@ -29,7 +30,7 @@ internal class Router(private val rootElement: Element) {
         },
     )
 
-    private var currentRoute: DecodedRoute? = null
+    private var currentRoute: RouteComponent? = null
 
     @PublishedApi
     internal fun index(block: RouteBlock) {
@@ -87,26 +88,23 @@ internal class Router(private val rootElement: Element) {
 
         val variablesRoute = SimpleRoute(parsedRoute.variables)
 
-        val decodedRoute = DecodedRoute(
+        val routeComponent = RouteComponent(
             segmentedRoute = parsedRoute.route,
-            component = ReactiveComponent(
-                boundNode = rootElement,
-                renderFunction = {
-                    parsedRoute.route.block.invoke(this, variablesRoute)
-                },
-                states = emptyList(),
-            ),
+            rootElement = rootElement,
+            renderFunction = {
+                parsedRoute.route.block.invoke(this, variablesRoute)
+            },
             route = variablesRoute,
         )
 
-        // Unmount current route so new one can take its place.
-        currentRoute?.unmount()
+        // Destroy the route so a new one can take its place.
+        currentRoute?.destroy()
 
         // We have a new route, so we need to set it as current.
-        this.currentRoute = decodedRoute
+        this.currentRoute = routeComponent
 
         // Then render it to the dom.
-        decodedRoute.render()
+        routeComponent.render()
     }
 
     private fun tryParseRoute(
@@ -192,18 +190,25 @@ private data class ParsedRoute(
     val variables: Map<String, String>,
 )
 
-internal class DecodedRoute(
+internal class RouteComponent(
     internal val segmentedRoute: SegmentedRoute,
-    internal val component: Component,
+    internal val rootElement: Element,
+    internal val renderFunction: ComponentRenderFunction,
     internal val route: SimpleRoute,
-) {
+) : AbstractComponent(emptyList()) {
 
-    internal fun unmount() {
-        component.unmount()
+    override fun render() {
+        createHtml(parentComponent = this, element = rootElement, renderFunction = renderFunction) { tag ->
+            rootElement.appendChild(tag.element)
+        }
     }
 
-    internal fun render() {
-        component.update()
+    override fun clear() {
+        super.clear()
+
+        // Fully clear the root element.
+        // Much easier than running through all elements to remove them.
+        rootElement.innerHTML = ""
     }
 }
 

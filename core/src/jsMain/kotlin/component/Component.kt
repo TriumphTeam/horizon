@@ -12,58 +12,67 @@ import kotlin.coroutines.CoroutineContext
 
 internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
-public interface Component : CoroutineScope {
+public interface Component : ReactiveElement, CoroutineScope {
 
-    public fun unmount()
+    public fun render()
 
-    public fun cleanUpDom()
+    public fun refresh()
 
-    public fun update()
+    public fun destroy()
 
     public fun addChild(component: Component)
 }
 
-@PublishedApi
-internal class ReactiveComponent(
-    private val boundNode: Element,
-    private val renderFunction: ComponentRenderFunction,
-    private val states: List<State<*>>,
+internal abstract class AbstractComponent(
+    protected val states: List<State<*>>,
 ) : Component {
 
-    private val lastElementAtCreation: Node? = boundNode.lastChild
-
-    private var renderedElements: MutableList<Tag> = mutableListOf()
-    private val children: MutableList<Component> = mutableListOf()
+    protected val children: MutableList<Component> = mutableListOf()
 
     override val coroutineContext: CoroutineContext
         get() = TODO("Not yet implemented")
 
-    override fun unmount() {
-        // Unmount child components.
-        children.forEach(Component::unmount)
-        // Then the list of previously rendered components.
-        children.clear()
+    override fun refresh() {
+        clear()
+        render()
+    }
+
+    override fun destroy() {
         // Clean up the states.
         states.forEach { state ->
             if (state is AbstractMutableState) {
                 state.removeListener(this)
             }
         }
-        // Then remove itself from the dom.
-        cleanUpDom()
+
+        // Then clear the component.
+        clear()
     }
 
-    override fun cleanUpDom() {
-        renderedElements.forEach { tag ->
-            boundNode.safeRemoveChild(tag.element)
-        }
-        renderedElements.clear()
+    override fun addChild(component: Component) {
+        children += component
     }
 
-    override fun update() {
-        // Create elements for this component.
+    protected open fun clear() {
+        // Destroy all children first.
+        children.forEach(Component::destroy)
+        // Then clear the list so it can be reused.
+        children.clear()
+    }
+}
 
+@PublishedApi
+internal class ReactiveComponent(
+    private val boundNode: Element,
+    private val parentComponent: Component,
+    private val renderFunction: ComponentRenderFunction,
+    states: List<State<*>>,
+) : AbstractComponent(states) {
 
+    private val lastElementAtCreation: Node? = boundNode.lastChild
+    private val renderedElements: MutableList<Tag> = mutableListOf()
+
+    override fun render() {
         // Scenario A
         // - this
         // - div
@@ -81,7 +90,7 @@ internal class ReactiveComponent(
         // Find the element after and prepend or append.
 
         fun createAndAppendElements(target: Node? = null) {
-            createHtml(parentComponent = this, element = boundNode, block = renderFunction) { tag ->
+            createHtml(parentComponent = this, element = boundNode, renderFunction = renderFunction) { tag ->
                 when {
                     target == null -> boundNode.appendChild(tag.element)
                     else -> boundNode.insertBefore(tag.element, target)
@@ -123,8 +132,12 @@ internal class ReactiveComponent(
         createAndAppendElements(elementAfter)
     }
 
-    override fun addChild(component: Component) {
-        children += component
+    override fun clear() {
+        super.clear()
+
+        // Then also clear the rendered elements.
+        renderedElements.forEach { tag -> boundNode.safeRemoveChild(tag.element) }
+        renderedElements.clear()
     }
 }
 

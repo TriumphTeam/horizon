@@ -8,7 +8,7 @@ import dev.triumphteam.horizon.state.AbstractMutableState
 
 public interface FunctionalComponent : StateHolder {
 
-    // @HtmlMarker
+    @TagMarker
     public fun render(block: ComponentRenderFunction)
 }
 
@@ -30,28 +30,26 @@ public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
     val functionalComponent = SimpleFunctionalComponent().apply(block)
     val states = functionalComponent.getStates()
 
-    println("making component on tag: ${element.nodeName}, with id: ${element.id}")
     // Create the component.
     val component = ReactiveComponent(
+        parentComponent = parentComponent,
         boundNode = element,
         renderFunction = functionalComponent.getComponentRender(),
         states = states,
     )
 
     // Make sure the parent knows about this component.
-
     parentComponent.addChild(component)
 
     states.forEach { state ->
         if (state is AbstractMutableState) {
             state.addListener(component) {
-                component.cleanUpDom()
-                component.update()
+                component.refresh()
             }
         }
     }
 
     // Then mount it.
     // TODO
-    component.update()
+    component.render()
 }
