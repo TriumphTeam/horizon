@@ -6,6 +6,7 @@ import dev.triumphteam.horizon.html.element.AudioTag
 import dev.triumphteam.horizon.html.element.BlockQuoteTag
 import dev.triumphteam.horizon.html.element.ButtonTag
 import dev.triumphteam.horizon.html.element.CanvasTag
+import dev.triumphteam.horizon.html.element.DialogTag
 import dev.triumphteam.horizon.html.element.LabelTag
 import dev.triumphteam.horizon.html.element.LiTag
 import dev.triumphteam.horizon.html.element.OlTag
@@ -208,6 +209,7 @@ public inline fun FlowContent.body(
 public inline fun FlowContent.button(
     id: String? = null,
     className: String? = null,
+    popoverTarget: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: ButtonTag.() -> Unit = {},
 ): Tag {
@@ -218,6 +220,7 @@ public inline fun FlowContent.button(
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
+                HtmlAttributes.POPOVER_TARGET to popoverTarget,
             ),
         ),
         block = block,
@@ -291,9 +294,32 @@ public inline fun FlowContent.del(
 }
 
 @TagMarker
+public inline fun FlowContent.dialog(
+    id: String? = null,
+    className: String? = null,
+    closedBy: String? = null,
+    attributes: MutableMap<String, String> = mutableMapOf(),
+    crossinline block: DialogTag.() -> Unit = {},
+): FlowTag {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return tag(
+        tag = DialogTag(
+            parentComponent = parentComponent,
+            initialAttributes = attributes.withAttributes(
+                HtmlAttributes.ID to id,
+                HtmlAttributes.CLASS to className,
+                HtmlAttributes.CLOSED_BY to closedBy,
+            ),
+        ),
+        block = block,
+    )
+}
+
+@TagMarker
 public inline fun FlowContent.div(
     id: String? = null,
     className: String? = null,
+    popover: Boolean? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: FlowTag.() -> Unit = {},
 ): Tag {
@@ -305,6 +331,7 @@ public inline fun FlowContent.div(
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
+                HtmlAttributes.POPOVER to popover?.toString(),
             ),
         ),
         block = block,

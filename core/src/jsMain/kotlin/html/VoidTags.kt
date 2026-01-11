@@ -90,6 +90,9 @@ public inline fun FlowContent.img(
 public inline fun FlowContent.input(
     id: String? = null,
     className: String? = null,
+    type: String? = null,
+    checked: Boolean? = null,
+    disabled: Boolean? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: InputTag.() -> Unit = {},
 ): InputTag {
@@ -100,6 +103,9 @@ public inline fun FlowContent.input(
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
+                HtmlAttributes.TYPE to type,
+                HtmlAttributes.CHECKED to checked?.toString(),
+                HtmlAttributes.DISABLED to disabled?.toString(),
             ),
         ),
         block = block,

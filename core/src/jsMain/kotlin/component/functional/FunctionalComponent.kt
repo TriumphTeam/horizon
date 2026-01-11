@@ -4,9 +4,13 @@ import dev.triumphteam.horizon.component.ComponentRenderFunction
 import dev.triumphteam.horizon.component.ReactiveComponent
 import dev.triumphteam.horizon.html.FlowContent
 import dev.triumphteam.horizon.html.TagMarker
-import dev.triumphteam.horizon.state.AbstractMutableState
+import dev.triumphteam.horizon.state.AbstractState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlin.coroutines.CoroutineContext
 
-public interface FunctionalComponent : StateHolder {
+public interface FunctionalComponent : StateHolder, CoroutineScope {
 
     @TagMarker
     public fun render(block: ComponentRenderFunction)
@@ -16,6 +20,9 @@ public interface FunctionalComponent : StateHolder {
 internal class SimpleFunctionalComponent : AbstractStateHolder(), FunctionalComponent {
 
     private var render: ComponentRenderFunction? = null
+
+    override val coroutineContext: CoroutineContext =
+        SupervisorJob() + Dispatchers.Default
 
     override fun render(block: ComponentRenderFunction) {
         this.render = block
@@ -36,6 +43,7 @@ public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
         boundNode = element,
         renderFunction = functionalComponent.getComponentRender(),
         states = states,
+        scope = functionalComponent,
     )
 
     // Make sure the parent knows about this component.
@@ -43,7 +51,7 @@ public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
 
     // Make sure the states refresh the component correctly.
     states.forEach { state ->
-        if (state is AbstractMutableState) {
+        if (state is AbstractState) {
             state.addListener(component) {
                 component.refresh()
             }

@@ -17,7 +17,7 @@ public interface MutableState<T> : State<T> {
     public operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
 }
 
-public abstract class AbstractMutableState<T> : MutableState<T> {
+public abstract class AbstractState<T> : State<T> {
 
     private val listeners: MutableMap<ReactiveElement, () -> Unit> = mutableMapOf()
 
@@ -37,7 +37,7 @@ public abstract class AbstractMutableState<T> : MutableState<T> {
 }
 
 public open class SimpleMutableState<T>(initialValue: T, private val mutationPolicy: StateMutationPolicy<T>) :
-    AbstractMutableState<T>() {
+    AbstractState<T>(), MutableState<T> {
 
     internal var value: T = initialValue
         private set

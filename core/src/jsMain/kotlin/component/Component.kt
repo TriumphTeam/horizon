@@ -3,19 +3,18 @@ package dev.triumphteam.horizon.component
 import dev.triumphteam.horizon.html.FlowContent
 import dev.triumphteam.horizon.html.Tag
 import dev.triumphteam.horizon.html.createHtml
-import dev.triumphteam.horizon.state.AbstractMutableState
+import dev.triumphteam.horizon.state.AbstractState
 import dev.triumphteam.horizon.state.State
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import kotlin.coroutines.CoroutineContext
 
 internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
-public interface Component : ReactiveElement, CoroutineScope {
+public interface Component : ReactiveElement {
+
+    public val renderedElements: List<Tag>
 
     public val renderedElements: List<Tag>
 
@@ -36,12 +35,10 @@ public interface Component : ReactiveElement, CoroutineScope {
 
 internal abstract class AbstractComponent(
     protected val states: List<State<*>>,
+    private val scope: CoroutineScope,
 ) : Component {
 
     protected val children: MutableList<Component> = mutableListOf()
-
-    override val coroutineContext: CoroutineContext =
-        SupervisorJob() + Dispatchers.Default
 
     override fun refresh() {
         clear()
@@ -51,13 +48,13 @@ internal abstract class AbstractComponent(
     override fun destroy() {
         // Clean up the states.
         states.forEach { state ->
-            if (state is AbstractMutableState) {
+            if (state is AbstractState) {
                 state.removeListener(this)
             }
         }
 
         // When being destroyed, we have to cancel all coroutines running.
-        cancel()
+        scope.cancel()
 
         // Then clear the component.
         fullClear()
@@ -84,7 +81,8 @@ internal class ReactiveComponent(
     parentComponent: Component,
     private val renderFunction: ComponentRenderFunction,
     states: List<State<*>>,
-) : AbstractComponent(states) {
+    scope: CoroutineScope,
+) : AbstractComponent(states, scope) {
 
     private val lastNodeAtCreation: Node? =
         parentComponent.renderedElements.lastOrNull()?.element ?: boundNode.lastChild

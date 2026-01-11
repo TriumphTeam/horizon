@@ -2,6 +2,7 @@
 
 package dev.triumphteam.horizon.html
 
+import dev.triumphteam.horizon.html.attributes.AreaShape
 import dev.triumphteam.horizon.html.attributes.CrossOrigin
 import dev.triumphteam.horizon.html.attributes.HtmlAttributes
 import dev.triumphteam.horizon.html.attributes.Preload
@@ -53,6 +54,13 @@ import dev.triumphteam.horizon.html.attributes.TagWithWidthAttribute
 import dev.triumphteam.horizon.html.attributes.Target
 import dev.triumphteam.horizon.html.attributes.getAttribute
 import dev.triumphteam.horizon.html.attributes.setAttribute
+import dev.triumphteam.horizon.html.element.ATag
+import dev.triumphteam.horizon.html.element.AreaTag
+import dev.triumphteam.horizon.html.element.BlockQuoteTag
+import dev.triumphteam.horizon.html.element.DialogTag
+import dev.triumphteam.horizon.html.element.MetaTag
+import dev.triumphteam.horizon.html.element.OlTag
+import dev.triumphteam.horizon.html.element.ScriptTag
 import org.w3c.dom.Element
 import org.w3c.dom.events.Event
 
@@ -330,7 +338,7 @@ public abstract class TagAttributeScope : Tag {
         get() = getAttribute(HtmlAttributes.CROSS_ORIGIN)?.let { CrossOrigin.valueOf(it) }
         set(value) = setAttribute(HtmlAttributes.CROSS_ORIGIN, value?.value)
 
-    /*public inline var ATag.ping: String?
+    public inline var ATag.ping: String?
         get() = getAttribute(HtmlAttributes.PING)
         set(value) = setAttribute(HtmlAttributes.PING, value)
 
@@ -376,7 +384,11 @@ public abstract class TagAttributeScope : Tag {
 
     public inline var ScriptTag.integrity: String?
         get() = getAttribute(HtmlAttributes.INTEGRITY)
-        set(value) = setAttribute(HtmlAttributes.INTEGRITY, value)*/
+        set(value) = setAttribute(HtmlAttributes.INTEGRITY, value)
+
+    public inline var DialogTag.closedBy: String?
+        get() = getAttribute(HtmlAttributes.CLOSED_BY)
+        set(value) = setAttribute(HtmlAttributes.CLOSED_BY, value)
 
     public inline var Tag.onClick: (Event) -> Unit
         get() = error("Tried to `get()` OnClick function, which is not allowed.")

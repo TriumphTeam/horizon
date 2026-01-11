@@ -11,6 +11,9 @@ import dev.triumphteam.horizon.state.State
 import dev.triumphteam.horizon.state.policy.StructureEqualityPolicy
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.w3c.dom.Element
 
 internal typealias RouteBlock = FlowContent.(Route) -> Unit
@@ -47,7 +50,6 @@ internal class Router(private val rootElement: Element) {
         // Trim out leading and trailing characters.
         val trimmedPath = path.trim().removePrefix("/").removePrefix("/")
         val pathSegments = if (trimmedPath.isEmpty()) emptyList() else trimmedPath.split("/")
-
 
         val route = when {
             pathSegments.isEmpty() -> indexRoute?.let { ParsedRoute(it, path, emptyMap()) }
@@ -87,7 +89,7 @@ internal class Router(private val rootElement: Element) {
             window.history.pushState(null, document.title, parsedRoute.path)
         }
 
-        val variablesRoute = SimpleRoute(parsedRoute.variables)
+        val variablesRoute = SimpleRoute(parsedRoute.route.segments, parsedRoute.variables)
 
         val routeComponent = RouteComponent(
             segmentedRoute = parsedRoute.route,
@@ -116,11 +118,6 @@ internal class Router(private val rootElement: Element) {
 
         val variables = mutableMapOf<String, String>()
         val segmentIterator = route.segments.iterator()
-
-        // This might need to change in the future if we allow "infinite" segments.
-        if (segments.size != route.segments.size) {
-            return null
-        }
 
         for (segment in segments) {
             // If there are more segments than the route allows, it won't match, so just exit.
@@ -170,7 +167,11 @@ internal class Router(private val rootElement: Element) {
 }
 
 public enum class SegmentType {
-    EXACT, VARIABLE, VARIABLE_OPTIONAL
+    EXACT, VARIABLE, VARIABLE_OPTIONAL;
+
+    public fun isVariable(): Boolean {
+        return this == VARIABLE || this == VARIABLE_OPTIONAL
+    }
 }
 
 public data class Segment(
@@ -196,7 +197,9 @@ internal class RouteComponent(
     internal val rootElement: Element,
     internal val renderFunction: ComponentRenderFunction,
     internal val route: SimpleRoute,
-) : AbstractComponent(emptyList()) {
+) : AbstractComponent(emptyList(), CoroutineScope(SupervisorJob() + Dispatchers.Default)) {
+
+    override val renderedElements: MutableList<Tag> = mutableListOf()
 
     override val renderedElements: MutableList<Tag> = mutableListOf()
 
@@ -217,11 +220,12 @@ internal class RouteComponent(
     }
 }
 
-internal class SimpleRoute(variables: Map<String, String>) : Route {
+internal class SimpleRoute(routeSegments: List<Segment>, variables: Map<String, String>) : Route {
 
-    private val variableStates = variables.mapValues { (name, value) ->
-        SimpleMutableState(value, StructureEqualityPolicy())
-    }
+    private val variableStates = routeSegments.filter { it.type.isVariable() }
+        .associate { segment ->
+            segment.name to SimpleMutableState(variables[segment.name] ?: "", StructureEqualityPolicy())
+        }
 
     override fun get(name: String): State<String> {
         return requireNotNull(variableStates[name]) {
