@@ -5,6 +5,7 @@ package dev.triumphteam.horizon.html
 import dev.triumphteam.horizon.component.Component
 import kotlinx.browser.document
 import org.w3c.dom.Element
+import org.w3c.dom.Node
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -16,6 +17,8 @@ public interface FlowChild {
 
 public interface Tag : FlowChild {
     public val tagName: String
+
+    public fun update(new: Tag)
 }
 
 public abstract class AbstractTag(
@@ -27,6 +30,80 @@ public abstract class AbstractTag(
 
     init {
         initialAttributes.forEach { (key, value) -> element.setAttribute(key, value) }
+    }
+
+    override fun update(new: Tag) {
+        updateElement(oldElement = element, newElement = new.element)
+    }
+
+    private fun updateElement(oldElement: Element, newElement: Element) {
+        // We need the attribute names to check if some were removed or added.
+        val existingAttributeNames = oldElement.getAttributeNames()
+        val newAttributeNames = newElement.getAttributeNames()
+
+        // Now we need to remove attributes that no longer exist.
+        for (name in existingAttributeNames) {
+            if (name in newAttributeNames) continue
+            oldElement.removeAttribute(name)
+        }
+
+        // Now we can update the attributes.
+        for (name in newAttributeNames) {
+            val newValue = newElement.getAttribute(name) ?: continue
+
+            // They are the same, so no need to update.
+            if (newValue == oldElement.getAttribute(name)) continue
+
+            // Update to the new value.
+            oldElement.setAttribute(name, newValue)
+        }
+
+        // Now we need to check and update each child element.
+        val children = oldElement.childNodes
+        val newChildren = newElement.childNodes
+
+        val newCount = newChildren.length
+        val minCount = minOf(children.length, newChildren.length)
+
+        for (index in 0..<minCount) {
+            val existingChild = children.item(index) ?: continue
+            val newChild = newChildren.item(index) ?: continue
+
+            // If they are the same type.
+            if (existingChild.nodeName == newChild.nodeName) {
+
+                // We also check if they are elements, as they can be updated differently.
+                if (existingChild is Element && newChild is Element) {
+                    updateElement(oldElement = existingChild, newElement = newChild)
+                    continue
+                }
+
+                // For text nodes, just compare and update content.
+                if (existingChild.nodeType == Node.TEXT_NODE && existingChild.textContent != newChild.textContent) {
+                    existingChild.textContent = newChild.textContent
+                    continue
+                }
+
+                if (existingChild.isEqualNode(newChild)) continue
+
+                // Replace the old child with the new one.
+                oldElement.replaceChild(newChild, existingChild)
+                continue
+            }
+
+            // If they are a different tag, we can just replace them.
+            oldElement.replaceChild(newChild, existingChild)
+        }
+
+        // Now we can remove extra existing children.
+        (newCount..<oldElement.childNodes.length).mapNotNull {
+            oldElement.childNodes.item(it)
+        }.forEach { oldElement.removeChild(it) }
+
+        // And finally add the new children.
+        for (index in minCount..<newCount) {
+            oldElement.appendChild(newChildren.item(index) ?: continue)
+        }
     }
 }
 

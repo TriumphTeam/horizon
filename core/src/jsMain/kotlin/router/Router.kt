@@ -3,6 +3,7 @@ package dev.triumphteam.horizon.router
 import dev.triumphteam.horizon.component.AbstractComponent
 import dev.triumphteam.horizon.component.ComponentRenderFunction
 import dev.triumphteam.horizon.html.FlowContent
+import dev.triumphteam.horizon.html.Tag
 import dev.triumphteam.horizon.html.createHtml
 import dev.triumphteam.horizon.html.div
 import dev.triumphteam.horizon.state.SimpleMutableState
@@ -197,18 +198,22 @@ internal class RouteComponent(
     internal val route: SimpleRoute,
 ) : AbstractComponent(emptyList()) {
 
+    override val renderedElements: MutableList<Tag> = mutableListOf()
+
     override fun render() {
         createHtml(parentComponent = this, element = rootElement, renderFunction = renderFunction) { tag ->
             rootElement.appendChild(tag.element)
+            renderedElements += tag
         }
     }
 
-    override fun clear() {
-        super.clear()
+    override fun fullClear() {
+        super.fullClear()
 
         // Fully clear the root element.
         // Much easier than running through all elements to remove them.
         rootElement.innerHTML = ""
+        renderedElements.clear()
     }
 }
 
