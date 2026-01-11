@@ -66,6 +66,7 @@ public inline fun FlowContent.img(
     className: String? = null,
     src: String? = null,
     alt: String? = null,
+    draggable: Boolean? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: ImgTag.() -> Unit = {},
 ): ImgTag {
@@ -78,6 +79,7 @@ public inline fun FlowContent.img(
                 HtmlAttributes.CLASS to className,
                 HtmlAttributes.SRC to src,
                 HtmlAttributes.ALT to alt,
+                HtmlAttributes.DRAGGABLE to draggable?.toString(),
             ),
         ),
         block = block,

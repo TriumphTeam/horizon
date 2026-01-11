@@ -42,7 +42,7 @@ internal abstract class AbstractComponent(
         SupervisorJob() + Dispatchers.Default
 
     override fun refresh() {
-        clear()
+        fullClear()
         render()
     }
 
@@ -58,7 +58,7 @@ internal abstract class AbstractComponent(
         cancel()
 
         // Then clear the component.
-        clear()
+        fullClear()
     }
 
     override fun addChild(component: Component) {
@@ -69,6 +69,10 @@ internal abstract class AbstractComponent(
         // Destroy all children first.
         children.forEach(Component::destroy)
         children.clear()
+    }
+
+    protected open fun fullClear() {
+        clear()
     }
 }
 
@@ -109,6 +113,8 @@ internal class ReactiveComponent(
 
                 renderedElements.add(tag)
             }
+
+            println("Rendered elements: ${renderedElements.size}")
         }
 
         // If this is null, it means we are the first element.
@@ -143,17 +149,14 @@ internal class ReactiveComponent(
         createAndAppendElements(elementAfter)
     }
 
-    override fun clear() {
-        super.clear()
+    override fun fullClear() {
+        super.fullClear()
 
         // Then also clear the rendered elements.
-        renderedElements.forEach { tag -> boundNode.safeRemoveChild(tag.element) }
+        renderedElements.forEach { tag ->
+            tag.element.remove()
+        }
         renderedElements.clear()
     }
 }
 
-internal fun Node.safeRemoveChild(child: Node) {
-    if (child.parentNode == this) {
-        removeChild(child)
-    }
-}

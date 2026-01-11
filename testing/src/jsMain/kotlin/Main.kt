@@ -1,6 +1,9 @@
 package dev.triumphteam.horizon
 
+import dev.triumphteam.horizon.Application.route
+import dev.triumphteam.horizon.component.functional.component
 import dev.triumphteam.horizon.html.br
+import dev.triumphteam.horizon.html.button
 import dev.triumphteam.horizon.html.div
 import dev.triumphteam.horizon.router.navigate
 import kotlinx.browser.window
@@ -34,6 +37,33 @@ public fun main() {
 
                 onClick = { event ->
                     window.alert("Kotlin!")
+                }
+            }
+
+            component {
+
+                var clicks by remember(0)
+
+                render {
+                    div { text("1") }
+
+                    component {
+                        render { div { text("2") } }
+                    }
+
+                    div { text("3") }
+                    div { text("Clicks: $clicks") }
+
+                    component {
+                        render { div { text("5") } }
+                    }
+
+                    div { text("6") }
+
+                    button {
+                        onClick = { clicks++ }
+                        text("Click me")
+                    }
                 }
             }
 
