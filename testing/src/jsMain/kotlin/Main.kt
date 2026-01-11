@@ -48,13 +48,17 @@ public fun main() {
                     div { text("1") }
 
                     component {
+                        println("Creating the culprit component!")
                         render { div { text("2") } }
                     }
 
                     div { text("3") }
-                    div { text("Clicks: $clicks") }
+                    div(className = "change-$clicks") {
+                        text("This should remain unchanged!")
+                    }
 
                     component {
+                        println("Creating the second culprit component!")
                         render { div { text("5") } }
                     }
 
