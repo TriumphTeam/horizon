@@ -42,7 +42,7 @@ internal abstract class AbstractComponent(
         SupervisorJob() + Dispatchers.Default
 
     override fun refresh() {
-        fullClear()
+        clear()
         render()
     }
 
@@ -88,21 +88,8 @@ internal class ReactiveComponent(
     private val renderedElements: MutableList<Tag> = mutableListOf()
 
     override fun render() {
-        // Scenario A
-        // - this
-        // - div
-        // - div
 
-        // Last element null
-        // Get the first element and insert before or append.
 
-        // Scenario B
-        // - div
-        // - this
-        // - div
-
-        // Last element div
-        // Find the element after and prepend or append.
 
         fun createAndAppendElements(target: Node? = null) {
             createHtml(parentComponent = this, element = boundNode, renderFunction = renderFunction) { tag ->
