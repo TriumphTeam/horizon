@@ -16,8 +16,6 @@ public interface Component : ReactiveElement {
 
     public val renderedElements: List<Tag>
 
-    public val renderedElements: List<Tag>
-
     /**
      * The render function is responsible for adding elements directly to the DOM.
      * The rendering is done at initialization and whenever the component's state changes.

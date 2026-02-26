@@ -79,6 +79,7 @@ public fun main() {
                 var clicks by remember(0)
 
                 render {
+                    println("hmm")
                     div { text("1") }
 
                     component {

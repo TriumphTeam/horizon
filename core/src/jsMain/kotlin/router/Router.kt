@@ -201,8 +201,6 @@ internal class RouteComponent(
 
     override val renderedElements: MutableList<Tag> = mutableListOf()
 
-    override val renderedElements: MutableList<Tag> = mutableListOf()
-
     override fun render() {
         createHtml(parentComponent = this, element = rootElement, renderFunction = renderFunction) { tag ->
             rootElement.appendChild(tag.element)
