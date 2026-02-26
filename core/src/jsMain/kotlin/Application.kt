@@ -1,7 +1,10 @@
 package dev.triumphteam.horizon
 
+import dev.triumphteam.horizon.router.Route
 import dev.triumphteam.horizon.router.RouteBlock
+import dev.triumphteam.horizon.router.RouteProvider
 import dev.triumphteam.horizon.router.Router
+import dev.triumphteam.horizon.router.SimpleRoute
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
@@ -31,15 +34,23 @@ public object Application {
         router.navigateTo(path)
     }
 
-    public fun index(block: RouteBlock) {
+    public fun index(block: RouteBlock<Route>) {
         router.index(block)
     }
 
-    public fun route(path: String, block: RouteBlock) {
+    public fun route(path: String, block: RouteBlock<SimpleRoute>) {
         router.route(path, block)
     }
 
-    public fun notFound(block: RouteBlock) {
+    public fun <T : Route> route(
+        path: String,
+        routeProvider: RouteProvider<T>,
+        block: RouteBlock<T>,
+    ) {
+        router.route(path, routeProvider, block)
+    }
+
+    public fun notFound(block: RouteBlock<Route>) {
         router.route(Router.NOT_FOUND_ROUTE, block)
     }
 }

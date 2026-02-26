@@ -1,5 +1,6 @@
 package dev.triumphteam.horizon.router
 
+import dev.triumphteam.horizon.Application.rootElement
 import dev.triumphteam.horizon.component.AbstractComponent
 import dev.triumphteam.horizon.component.ComponentRenderFunction
 import dev.triumphteam.horizon.html.FlowContent
@@ -16,7 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.w3c.dom.Element
 
-internal typealias RouteBlock = FlowContent.(Route) -> Unit
+internal typealias RouteBlock<T> = FlowContent.(route: T) -> Unit
+internal typealias RouteProvider<T> = (routeSegments: List<Segment>, variables: Map<String, String>) -> T
 
 @PublishedApi
 internal class Router(private val rootElement: Element) {
@@ -26,24 +28,46 @@ internal class Router(private val rootElement: Element) {
         const val DEFAULT_INDEX_ROUTE = "/"
     }
 
-    private var indexRoute: SegmentedRoute? = null
+    private var indexRoute: SegmentedRoute<DefaultUnsegmentedRoute>? = null
 
-    private val routes: MutableList<SegmentedRoute> = mutableListOf(
-        createSegmentedRoute("/404") {
+    private val routes: MutableList<SegmentedRoute<*>> = mutableListOf(
+        createSegmentedRoute(
+            path = "/404",
+            routeProvider = { _, _ -> DefaultUnsegmentedRoute },
+        ) {
             div { text("404 Not Found") }
         },
     )
 
-    private var currentRoute: RouteComponent? = null
+    private var currentRoute: RouteComponent<*>? = null
 
     @PublishedApi
-    internal fun index(block: RouteBlock) {
-        indexRoute = createSegmentedRoute(DEFAULT_INDEX_ROUTE, block)
+    internal fun index(block: RouteBlock<DefaultUnsegmentedRoute>) {
+        indexRoute = createSegmentedRoute(
+            path = DEFAULT_INDEX_ROUTE,
+            routeProvider = { _, _ -> DefaultUnsegmentedRoute },
+            block = block,
+        )
     }
 
     @PublishedApi
-    internal fun route(path: String, block: RouteBlock) {
-        this.routes += createSegmentedRoute(path, block)
+    internal fun route(path: String, block: RouteBlock<DefaultSegmentedRoute>) {
+        this.routes += createSegmentedRoute(
+            path = path,
+            routeProvider = { routeSegments, variables ->
+                DefaultSegmentedRoute(routeSegments, variables)
+            },
+            block = block,
+        )
+    }
+
+    @PublishedApi
+    internal fun <T : Route> route(
+        path: String,
+        routeProvider: RouteProvider<T>,
+        block: RouteBlock<T>,
+    ) {
+        this.routes += createSegmentedRoute(path, routeProvider, block)
     }
 
     internal fun navigateTo(path: String, pushState: Boolean = true) {
@@ -64,7 +88,7 @@ internal class Router(private val rootElement: Element) {
         handleRoute(route, pushState)
     }
 
-    private fun findRoute(pathSegments: List<String>, path: String): ParsedRoute? {
+    private fun findRoute(pathSegments: List<String>, path: String): ParsedRoute<*>? {
         routes.forEach { route ->
             return tryParseRoute(route, path, pathSegments) ?: return@forEach
         }
@@ -72,12 +96,13 @@ internal class Router(private val rootElement: Element) {
         return null
     }
 
-    private fun handleRoute(parsedRoute: ParsedRoute, pushState: Boolean) {
+    private fun handleRoute(parsedRoute: ParsedRoute<*>, pushState: Boolean) {
         // Found a matching route
         val currentRoute = this.currentRoute
+        val route = parsedRoute.route
 
         // If the route matches, we just need to update the variables.
-        if (currentRoute != null && currentRoute.segmentedRoute == parsedRoute.route) {
+        if (currentRoute != null && currentRoute.segmentedRoute == route) {
             if (currentRoute.route.updateVariables(parsedRoute.variables) && pushState) {
                 // Only push state if the variables changed and we are meant to push state.
                 window.history.pushState(null, document.title, parsedRoute.path)
@@ -89,16 +114,7 @@ internal class Router(private val rootElement: Element) {
             window.history.pushState(null, document.title, parsedRoute.path)
         }
 
-        val variablesRoute = SimpleRoute(parsedRoute.route.segments, parsedRoute.variables)
-
-        val routeComponent = RouteComponent(
-            segmentedRoute = parsedRoute.route,
-            rootElement = rootElement,
-            renderFunction = {
-                parsedRoute.route.block.invoke(this, variablesRoute)
-            },
-            route = variablesRoute,
-        )
+        val routeComponent = route.createComponent(parsedRoute.variables)
 
         // Destroy the route so a new one can take its place.
         currentRoute?.destroy()
@@ -111,10 +127,10 @@ internal class Router(private val rootElement: Element) {
     }
 
     private fun tryParseRoute(
-        route: SegmentedRoute,
+        route: SegmentedRoute<*>,
         path: String,
         segments: List<String>,
-    ): ParsedRoute? {
+    ): ParsedRoute<*>? {
 
         val variables = mutableMapOf<String, String>()
         val segmentIterator = route.segments.iterator()
@@ -139,7 +155,11 @@ internal class Router(private val rootElement: Element) {
         )
     }
 
-    private fun createSegmentedRoute(path: String, block: RouteBlock): SegmentedRoute {
+    private fun <T : Route> createSegmentedRoute(
+        path: String,
+        routeProvider: RouteProvider<T>,
+        block: RouteBlock<T>,
+    ): SegmentedRoute<T> {
         return SegmentedRoute(
             segments = path.trim('/')
                 .split("/")
@@ -161,6 +181,7 @@ internal class Router(private val rootElement: Element) {
                     }
                 },
             isIndex = false,
+            routeProvider = routeProvider,
             block = block,
         )
     }
@@ -180,23 +201,38 @@ public data class Segment(
 )
 
 @PublishedApi
-internal data class SegmentedRoute(
+internal data class SegmentedRoute<T : Route>(
     internal val segments: List<Segment>,
     internal val isIndex: Boolean = false,
-    internal val block: RouteBlock,
-)
+    private val routeProvider: RouteProvider<T>,
+    private val block: RouteBlock<T>,
+) {
 
-private data class ParsedRoute(
-    val route: SegmentedRoute,
+    internal fun createComponent(variables: Map<String, String>): RouteComponent<T> {
+        val route = routeProvider(segments, variables)
+
+        return RouteComponent(
+            segmentedRoute = this,
+            rootElement = rootElement,
+            renderFunction = {
+                block(this, route)
+            },
+            route = route,
+        )
+    }
+}
+
+private data class ParsedRoute<T : Route>(
+    val route: SegmentedRoute<T>,
     val path: String,
     val variables: Map<String, String>,
 )
 
-internal class RouteComponent(
-    internal val segmentedRoute: SegmentedRoute,
+internal class RouteComponent<T : Route>(
+    internal val segmentedRoute: SegmentedRoute<T>,
     internal val rootElement: Element,
     internal val renderFunction: ComponentRenderFunction,
-    internal val route: SimpleRoute,
+    internal val route: T,
 ) : AbstractComponent(emptyList(), CoroutineScope(SupervisorJob() + Dispatchers.Default)) {
 
     override val renderedElements: MutableList<Tag> = mutableListOf()
@@ -218,7 +254,15 @@ internal class RouteComponent(
     }
 }
 
-internal class SimpleRoute(routeSegments: List<Segment>, variables: Map<String, String>) : Route {
+@PublishedApi
+internal object DefaultUnsegmentedRoute : Route {
+    override fun updateVariables(variables: Map<String, String>): Boolean {
+        return false
+    }
+}
+
+@PublishedApi
+internal class DefaultSegmentedRoute(routeSegments: List<Segment>, variables: Map<String, String>) : SimpleRoute {
 
     private val variableStates = routeSegments.filter { it.type.isVariable() }
         .associate { segment ->
@@ -241,7 +285,7 @@ internal class SimpleRoute(routeSegments: List<Segment>, variables: Map<String, 
         return variableStates[name]?.value
     }
 
-    internal fun updateVariables(variables: Map<String, String>): Boolean {
+    override fun updateVariables(variables: Map<String, String>): Boolean {
         return variables.map { (name, newValue) ->
             variableStates[name]?.setValue(newValue) ?: return@map false
         }.any { it }
