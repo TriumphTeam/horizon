@@ -3,19 +3,18 @@ package dev.triumphteam.horizon.component
 import dev.triumphteam.horizon.html.FlowContent
 import dev.triumphteam.horizon.html.Tag
 import dev.triumphteam.horizon.html.createHtml
-import dev.triumphteam.horizon.state.AbstractMutableState
+import dev.triumphteam.horizon.state.AbstractState
 import dev.triumphteam.horizon.state.State
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import kotlin.coroutines.CoroutineContext
 
 internal typealias ComponentRenderFunction = FlowContent.() -> Unit
 
-public interface Component : ReactiveElement, CoroutineScope {
+public interface Component : ReactiveElement {
+
+    public val renderedElements: List<Tag>
 
     /**
      * The render function is responsible for adding elements directly to the DOM.
@@ -34,12 +33,10 @@ public interface Component : ReactiveElement, CoroutineScope {
 
 internal abstract class AbstractComponent(
     protected val states: List<State<*>>,
+    private val scope: CoroutineScope,
 ) : Component {
 
     protected val children: MutableList<Component> = mutableListOf()
-
-    override val coroutineContext: CoroutineContext =
-        SupervisorJob() + Dispatchers.Default
 
     override fun refresh() {
         clear()
@@ -49,16 +46,16 @@ internal abstract class AbstractComponent(
     override fun destroy() {
         // Clean up the states.
         states.forEach { state ->
-            if (state is AbstractMutableState) {
+            if (state is AbstractState) {
                 state.removeListener(this)
             }
         }
 
         // When being destroyed, we have to cancel all coroutines running.
-        cancel()
+        scope.cancel()
 
         // Then clear the component.
-        clear()
+        fullClear()
     }
 
     override fun addChild(component: Component) {
@@ -70,90 +67,120 @@ internal abstract class AbstractComponent(
         children.forEach(Component::destroy)
         children.clear()
     }
+
+    protected open fun fullClear() {
+        clear()
+    }
 }
 
 @PublishedApi
 internal class ReactiveComponent(
     private val boundNode: Element,
-    private val parentComponent: Component,
+    parentComponent: Component,
     private val renderFunction: ComponentRenderFunction,
     states: List<State<*>>,
-) : AbstractComponent(states) {
+    scope: CoroutineScope,
+) : AbstractComponent(states, scope) {
 
-    private val lastElementAtCreation: Node? = boundNode.lastChild
-    private val renderedElements: MutableList<Tag> = mutableListOf()
+    private val lastNodeAtCreation: Node? =
+        parentComponent.renderedElements.lastOrNull()?.element ?: boundNode.lastChild
+    override val renderedElements: MutableList<Tag> = mutableListOf()
 
     override fun render() {
-        // Scenario A
-        // - this
-        // - div
-        // - div
+        // Copy the previous elements to make it easier to modify the current ones.
+        val previousElements = renderedElements.toList()
+        // Then clear the existing elements.
+        renderedElements.clear()
 
-        // Last element null
-        // Get the first element and insert before or append.
+        // We need the iterator to compare the previous elements with the new ones.
+        val previousIterator = previousElements.iterator()
 
-        // Scenario B
-        // - div
-        // - this
-        // - div
+        fun appendElement(element: Tag, anchor: Node?) {
+            // Mark the element as rendered.
+            renderedElements += element
 
-        // Last element div
-        // Find the element after and prepend or append.
+            // Check if we need to append last or append before.
+            if (anchor == null) {
+                boundNode.appendChild(element.element)
+                return
+            }
 
-        fun createAndAppendElements(target: Node? = null) {
-            createHtml(parentComponent = this, element = boundNode, renderFunction = renderFunction) { tag ->
+            // The only option left is to append before.
+            boundNode.insertBefore(element.element, anchor)
+        }
+
+        fun createElements(anchor: Node?) {
+            // Then proceed to attempt to create the HTML for the component.
+            createHtml(parentComponent = this, element = boundNode, renderFunction = renderFunction) { newElement ->
+                // Check if we need to compare elements.
                 when {
-                    target == null -> boundNode.appendChild(tag.element)
-                    else -> boundNode.insertBefore(tag.element, target)
-                }
+                    previousIterator.hasNext() -> {
+                        val previousElement = previousIterator.next()
 
-                renderedElements.add(tag)
+                        // If they are the same type.
+                        if (newElement.tagName == previousElement.tagName) {
+                            // Reuse the existing node by just updating it instead.
+                            previousElement.update(newElement)
+                            renderedElements += previousElement
+                            return@createHtml
+                        }
+
+                        // Different element completely so we need to replace it.
+                        boundNode.replaceChild(newElement.element, previousElement.element)
+                        renderedElements += newElement
+                    }
+
+                    // If we have nothing to compare, we append it.
+                    else -> appendElement(newElement, anchor)
+                }
+            }
+
+            // Remove all previous elements that were not used.
+            while (previousIterator.hasNext()) {
+                previousIterator.next().element.remove()
             }
         }
 
-        // If this is null, it means we are the first element.
-        val lastElement = lastElementAtCreation
+        val lastNode = lastNodeAtCreation
 
-        if (lastElement == null) {
-            // Check if a first child exists.
-            val firstElement = boundNode.firstChild
+        // If this is null, it means we are the first node.
+        if (lastNode == null) {
+            // Check if an element already exists.
+            val anchor = boundNode.firstChild
 
-            // If it doesn't, we append as if we're the only elements.
-            if (firstElement == null) {
-                createAndAppendElements()
+            // If nothing exists, it means this component is the only one.
+            if (anchor == null) {
+                createElements(null)
                 return
             }
 
             // If we have a first element, we insert before it.
-            createAndAppendElements(firstElement)
+            createElements(anchor)
             return
         }
 
-        // Here we can assume we have a last element.
+        // Here we can assume we have a node we must be after.
         // So we get its next sibling.
-        val elementAfter = lastElement.nextSibling
+        val anchor = lastNode.nextSibling
 
-        // If no sibling exists, we append as if we're the last element.
-        if (elementAfter == null) {
-            createAndAppendElements()
+        // If no sibling exists, we append as if we're the last node.
+        if (anchor == null) {
+            createElements(null)
             return
         }
 
         // If we do have it, we insert before it.
-        createAndAppendElements(elementAfter)
+        createElements(anchor)
     }
 
-    override fun clear() {
-        super.clear()
+    override fun fullClear() {
+        super.fullClear()
 
         // Then also clear the rendered elements.
-        renderedElements.forEach { tag -> boundNode.safeRemoveChild(tag.element) }
+        renderedElements.forEach { tag ->
+            tag.element.remove()
+        }
         renderedElements.clear()
     }
 }
 
-internal fun Node.safeRemoveChild(child: Node) {
-    if (child.parentNode == this) {
-        removeChild(child)
-    }
-}

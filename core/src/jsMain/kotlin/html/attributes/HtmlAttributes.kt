@@ -306,4 +306,7 @@ public object HtmlAttributes {
 
     /** <link> */
     public const val INTEGRITY: String = "integrity"
+
+    /** <dialog> */
+    public const val CLOSED_BY: String = "closedby"
 }

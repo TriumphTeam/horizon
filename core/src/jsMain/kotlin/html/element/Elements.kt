@@ -64,6 +64,10 @@ public class CanvasTag(
     initialAttributes: Map<String, String>,
 ) : FlowTag(tagName = "canvas", parentComponent, initialAttributes), TagWithWidthAttribute, TagWithHeightAttribute
 
+public class DialogTag(
+    parentComponent: Component,
+    initialAttributes: Map<String, String>,
+) : FlowTag(tagName = "dialog", parentComponent, initialAttributes)
 
 public class LabelTag(
     parentComponent: Component,

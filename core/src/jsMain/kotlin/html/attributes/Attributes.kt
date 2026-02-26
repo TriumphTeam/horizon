@@ -54,6 +54,11 @@ internal fun Tag.setAttribute(attribute: String, value: String?) {
         return
     }
 
+    if (attribute == "checked" || attribute == "selected" || attribute == "disabled" || attribute == "popover") {
+        element.asDynamic()[attribute] = value.toBoolean()
+        return
+    }
+
     element.setAttribute(attribute, value)
 }
 
