@@ -18,7 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import org.w3c.dom.Element
 
 internal typealias RouteBlock<T> = FlowContent.(route: T) -> Unit
-internal typealias RouteProvider<T> = (routeSegments: List<Segment>, variables: Map<String, String>) -> T
+internal typealias RouteProvider<T> = (routeSegments: List<Segment>, variables: Map<String, String>) -> T?
 
 @PublishedApi
 internal class Router(private val rootElement: Element) {
@@ -81,7 +81,7 @@ internal class Router(private val rootElement: Element) {
         }
 
         if (route == null) {
-            navigateTo(NOT_FOUND_ROUTE, pushState)
+            notFound(pushState)
             return
         }
 
@@ -103,9 +103,17 @@ internal class Router(private val rootElement: Element) {
 
         // If the route matches, we just need to update the variables.
         if (currentRoute != null && currentRoute.segmentedRoute == route) {
-            if (currentRoute.route.updateVariables(parsedRoute.variables) && pushState) {
-                // Only push state if the variables changed and we are meant to push state.
-                window.history.pushState(null, document.title, parsedRoute.path)
+            val result = currentRoute.route.updateVariables(parsedRoute.variables)
+
+            when (result) {
+                RouteVariablesUpdateResult.ERROR -> notFound(pushState)
+                RouteVariablesUpdateResult.UPDATED -> {
+                    if (!pushState) return
+                    // Only push state if the variables changed and we are meant to push state.
+                    window.history.pushState(null, document.title, parsedRoute.path)
+                }
+
+                else -> {}
             }
             return
         }
@@ -114,7 +122,11 @@ internal class Router(private val rootElement: Element) {
             window.history.pushState(null, document.title, parsedRoute.path)
         }
 
-        val routeComponent = route.createComponent(parsedRoute.variables)
+        // If something happens when creating the component, we redirect to not found.
+        val routeComponent = route.createComponent(parsedRoute.variables) ?: run {
+            notFound(pushState)
+            return
+        }
 
         // Destroy the route so a new one can take its place.
         currentRoute?.destroy()
@@ -185,6 +197,10 @@ internal class Router(private val rootElement: Element) {
             block = block,
         )
     }
+
+    private fun notFound(pushState: Boolean) {
+        navigateTo(NOT_FOUND_ROUTE, pushState)
+    }
 }
 
 public enum class SegmentType {
@@ -208,8 +224,8 @@ internal data class SegmentedRoute<T : Route>(
     private val block: RouteBlock<T>,
 ) {
 
-    internal fun createComponent(variables: Map<String, String>): RouteComponent<T> {
-        val route = routeProvider(segments, variables)
+    internal fun createComponent(variables: Map<String, String>): RouteComponent<T>? {
+        val route = routeProvider(segments, variables) ?: return null
 
         return RouteComponent(
             segmentedRoute = this,
@@ -256,8 +272,8 @@ internal class RouteComponent<T : Route>(
 
 @PublishedApi
 internal object DefaultUnsegmentedRoute : Route {
-    override fun updateVariables(variables: Map<String, String>): Boolean {
-        return false
+    override fun updateVariables(variables: Map<String, String>): RouteVariablesUpdateResult {
+        return RouteVariablesUpdateResult.NOT_UPDATED
     }
 }
 
@@ -285,9 +301,11 @@ internal class DefaultSegmentedRoute(routeSegments: List<Segment>, variables: Ma
         return variableStates[name]?.value
     }
 
-    override fun updateVariables(variables: Map<String, String>): Boolean {
-        return variables.map { (name, newValue) ->
+    override fun updateVariables(variables: Map<String, String>): RouteVariablesUpdateResult {
+        val updated = variables.map { (name, newValue) ->
             variableStates[name]?.setValue(newValue) ?: return@map false
         }.any { it }
+
+        return if (updated) RouteVariablesUpdateResult.UPDATED else RouteVariablesUpdateResult.NOT_UPDATED
     }
 }

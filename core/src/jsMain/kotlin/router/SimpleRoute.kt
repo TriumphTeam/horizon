@@ -4,7 +4,7 @@ import dev.triumphteam.horizon.state.State
 
 public interface Route {
 
-    public fun updateVariables(variables: Map<String, String>): Boolean
+    public fun updateVariables(variables: Map<String, String>): RouteVariablesUpdateResult
 }
 
 public interface SimpleRoute : Route {
@@ -14,4 +14,8 @@ public interface SimpleRoute : Route {
     public fun getVariable(name: String): String
 
     public fun getVariableNullable(name: String): String?
+}
+
+public enum class RouteVariablesUpdateResult {
+    UPDATED, NOT_UPDATED, ERROR;
 }
