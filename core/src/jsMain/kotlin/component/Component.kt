@@ -119,6 +119,7 @@ internal class ReactiveComponent(
 
                         // If they are the same type.
                         if (newElement.tagName == previousElement.tagName) {
+                            println("DEBUG: same tag1!! ${newElement.tagName}")
                             // Reuse the existing node by just updating it instead.
                             previousElement.update(newElement)
                             renderedElements += previousElement

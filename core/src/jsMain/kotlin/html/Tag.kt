@@ -38,6 +38,7 @@ public abstract class AbstractTag(
     }
 
     private fun updateElement(oldElement: Element, newElement: Element) {
+        println("DEBUG: Updating element on ${oldElement.tagName} tag")
         // We need the attribute names to check if some were removed or added.
         val existingAttributeNames = oldElement.getAttributeNames()
         val newAttributeNames = newElement.getAttributeNames()
@@ -51,10 +52,8 @@ public abstract class AbstractTag(
         // Now we can update the attributes.
         for (name in newAttributeNames) {
             val newValue = newElement.getAttribute(name) ?: continue
-
             // They are the same, so no need to update.
             if (newValue == oldElement.getAttribute(name)) continue
-
             // Update to the new value.
             oldElement.setAttribute(name, newValue)
         }
@@ -62,7 +61,6 @@ public abstract class AbstractTag(
         // Now we need to check and update each child element.
         val children = oldElement.childNodes
         val newChildren = newElement.childNodes
-
         val newCount = newChildren.length
         val minCount = minOf(children.length, newChildren.length)
 
@@ -72,7 +70,6 @@ public abstract class AbstractTag(
 
             // If they are the same type.
             if (existingChild.nodeName == newChild.nodeName) {
-
                 // We also check if they are elements, as they can be updated differently.
                 if (existingChild is Element && newChild is Element) {
                     updateElement(oldElement = existingChild, newElement = newChild)
@@ -87,13 +84,13 @@ public abstract class AbstractTag(
 
                 if (existingChild.isEqualNode(newChild)) continue
 
-                // Replace the old child with the new one.
-                oldElement.replaceChild(newChild, existingChild)
+                // Replace the old child with a CLONE of the new one.
+                oldElement.replaceChild(newChild.cloneNode(deep = true), existingChild)
                 continue
             }
 
-            // If they are a different tag, we can just replace them.
-            oldElement.replaceChild(newChild, existingChild)
+            // If they are a different tag, we can just replace them with a CLONE.
+            oldElement.replaceChild(newChild.cloneNode(deep = true), existingChild)
         }
 
         // Now we can remove extra existing children.
@@ -101,9 +98,10 @@ public abstract class AbstractTag(
             oldElement.childNodes.item(it)
         }.forEach { oldElement.removeChild(it) }
 
-        // And finally add the new children.
+        // And finally add the new children (as CLONES).
         for (index in minCount..<newCount) {
-            oldElement.appendChild(newChildren.item(index) ?: continue)
+            val newChild = newChildren.item(index) ?: continue
+            oldElement.appendChild(newChild.cloneNode(deep = true))
         }
     }
 }
