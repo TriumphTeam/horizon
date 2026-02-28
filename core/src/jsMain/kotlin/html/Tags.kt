@@ -21,6 +21,7 @@ import kotlin.contracts.contract
 public inline fun FlowContent.a(
     id: String? = null,
     className: String? = null,
+    href: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: ATag.() -> Unit = {},
 ): Tag {
@@ -31,6 +32,7 @@ public inline fun FlowContent.a(
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
+                HtmlAttributes.HREF to href,
             ),
         ),
         block = block,

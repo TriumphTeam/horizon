@@ -38,7 +38,6 @@ public abstract class AbstractTag(
     }
 
     private fun updateElement(oldElement: Element, newElement: Element) {
-        println("DEBUG: Updating element on ${oldElement.tagName} tag")
         // We need the attribute names to check if some were removed or added.
         val existingAttributeNames = oldElement.getAttributeNames()
         val newAttributeNames = newElement.getAttributeNames()

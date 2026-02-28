@@ -74,8 +74,6 @@ internal class Router(private val rootElement: Element) {
         // Trim out leading and trailing characters.
         val trimmedPath = path.trim().removePrefix("/").removeSuffix("/")
         val pathSegments = if (trimmedPath.isEmpty()) emptyList() else trimmedPath.split("/")
-        println("DEBUG: Going to $trimmedPath")
-        println("DEBUG: Going to $pathSegments")
 
         val route = when {
             pathSegments.isEmpty() -> indexRoute?.let { ParsedRoute(it, path, emptyMap()) }
