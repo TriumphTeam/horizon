@@ -993,7 +993,7 @@ public inline fun FlowContent.thead(
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return tag(
         tag = SimpleFlowTag(
-            tagName = "thread",
+            tagName = "thead",
             parentComponent = parentComponent,
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,

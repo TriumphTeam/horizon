@@ -162,6 +162,12 @@ internal class Router(private val rootElement: Element) {
             }
         }
 
+        // Check if the remaining route segments are all optional.
+        while (segmentIterator.hasNext()) {
+            val remaining = segmentIterator.next()
+            if (remaining.type != SegmentType.VARIABLE_OPTIONAL) return null
+        }
+
         return ParsedRoute(
             route = route,
             path = path,

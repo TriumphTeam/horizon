@@ -14,7 +14,7 @@ public class ReferenceEqualityPolicy<T> : StateMutationPolicy<T> {
 }
 
 public class NeverEqualPolicy<T> : StateMutationPolicy<T> {
-    override fun shouldMutate(currentValue: T?, newValue: T?): Boolean = false
+    override fun shouldMutate(currentValue: T?, newValue: T?): Boolean = true
 }
 
 public fun <T> neverEqual(): StateMutationPolicy<T> = NeverEqualPolicy()

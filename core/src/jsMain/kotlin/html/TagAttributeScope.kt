@@ -347,8 +347,8 @@ public abstract class TagAttributeScope : Tag {
         set(value) = setAttribute(HtmlAttributes.COORDS, value)
 
     public inline var AreaTag.shape: AreaShape?
-        get() = getAttribute(HtmlAttributes.COORDS)?.let { AreaShape.valueOf(it) }
-        set(value) = setAttribute(HtmlAttributes.COORDS, value?.value)
+        get() = getAttribute(HtmlAttributes.SHAPE)?.let { AreaShape.valueOf(it) }
+        set(value) = setAttribute(HtmlAttributes.SHAPE, value?.value)
 
     public inline var AreaTag.shapeRaw: String?
         get() = getAttribute(HtmlAttributes.COORDS)
