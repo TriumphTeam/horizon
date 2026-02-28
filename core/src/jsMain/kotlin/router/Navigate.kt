@@ -37,10 +37,14 @@ internal fun resolveRelativePath(to: String): String {
 }
 
 @TagMarker
-public inline fun FlowContent.navigate(to: String, crossinline block: ATag.() -> Unit = {}): Tag {
+public inline fun FlowContent.navigate(
+    to: String,
+    id: String? = null,
+    className: String? = null,
+    crossinline block: ATag.() -> Unit = {},
+): Tag {
     val resolvedPath = resolveRelativePath(to)
-    return a {
-        href = resolveRelativePath(to)
+    return a(href = resolvedPath, id = id, className = className) {
         onClick = { event ->
             event.preventDefault()
             Application.goTo(resolvedPath)
