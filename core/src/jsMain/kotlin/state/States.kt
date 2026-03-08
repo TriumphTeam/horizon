@@ -19,7 +19,9 @@ public interface MutableState<T> : State<T> {
 
 public abstract class AbstractState<T> : State<T> {
 
-    private val listeners: MutableMap<ReactiveElement, () -> Unit> = mutableMapOf()
+    protected val listeners: MutableMap<ReactiveElement, () -> Unit> = mutableMapOf()
+
+    protected open fun onRemove(element: ReactiveElement) {}
 
     @PublishedApi
     internal fun addListener(element: ReactiveElement, listener: () -> Unit) {
@@ -29,6 +31,7 @@ public abstract class AbstractState<T> : State<T> {
     @PublishedApi
     internal fun removeListener(element: ReactiveElement) {
         listeners.remove(element)
+        onRemove(element)
     }
 
     protected fun update() {
@@ -50,7 +53,7 @@ public open class SimpleMutableState<T>(initialValue: T, private val mutationPol
         setValue(value)
     }
 
-    internal fun setValue(value: T): Boolean {
+    protected fun setValue(value: T): Boolean {
         val shouldMutate = mutationPolicy.shouldMutate(this.value, value)
 
         if (!shouldMutate) return false
@@ -60,8 +63,12 @@ public open class SimpleMutableState<T>(initialValue: T, private val mutationPol
         return true
     }
 
+    internal fun internalSetValue(value: T): Boolean {
+        return setValue(value)
+    }
+
     override fun toString(): String {
-        return "[$value]"
+        return "[$value](${listeners.size})"
     }
 }
 

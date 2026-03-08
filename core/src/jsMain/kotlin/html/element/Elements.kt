@@ -17,6 +17,8 @@ import dev.triumphteam.horizon.html.attributes.TagWithHrefLangAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithMediaAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithNameAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithPlaceholderAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithPopoverTargetActionAttribute
+import dev.triumphteam.horizon.html.attributes.TagWithPopoverTargetAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithReadOnlyAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithReferrerPolicyAttribute
 import dev.triumphteam.horizon.html.attributes.TagWithRelAttribute
@@ -36,7 +38,7 @@ public class ATag(
     parentComponent: Component,
     initialAttributes: Map<String, String>,
 ) : FlowTag(tagName = "a", parentComponent, initialAttributes), TagWithDownloadAttribute, TagWithHrefAttribute,
-     TagWithHrefLangAttribute, TagWithMediaAttribute, TagWithRelAttribute, TagWithTargetAttribute, TagWithTypeAttribute,
+    TagWithHrefLangAttribute, TagWithMediaAttribute, TagWithRelAttribute, TagWithTargetAttribute, TagWithTypeAttribute,
     TagWithReferrerPolicyAttribute
 
 public class AudioTag(
@@ -54,7 +56,7 @@ public class ButtonTag(
     initialAttributes: Map<String, String>,
 ) : FlowTag(tagName = "button", parentComponent, initialAttributes), TagWithAutoFocusAttribute,
     TagWithDisabledAttribute, TagWithFormAttribute, TagWithFormActionAttribute, TagWithTypeAttribute,
-    TagWithNameAttribute, TagWithValueAttribute {
+    TagWithNameAttribute, TagWithValueAttribute, TagWithPopoverTargetAttribute, TagWithPopoverTargetActionAttribute {
 
     // TODO: Some extra attributes.
 }
@@ -104,3 +106,8 @@ public class TextAreaTag(
 
     // TODO: Some extra attributes.
 }
+
+public class VideoTag(
+    parentComponent: Component,
+    initialAttributes: Map<String, String>,
+) : FlowTag(tagName = "video", parentComponent, initialAttributes), TagWithAudioVideoAttributes, TagWithSrcAttribute

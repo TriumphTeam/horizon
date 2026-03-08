@@ -41,12 +41,14 @@ public inline fun FlowContent.navigate(
     to: String,
     id: String? = null,
     className: String? = null,
+    crossinline beforeNavigate: () -> Unit = {},
     crossinline block: ATag.() -> Unit = {},
 ): Tag {
     val resolvedPath = resolveRelativePath(to)
     return a(href = resolvedPath, id = id, className = className) {
         onClick = { event ->
             event.preventDefault()
+            beforeNavigate()
             Application.goTo(resolvedPath)
         }
         block()

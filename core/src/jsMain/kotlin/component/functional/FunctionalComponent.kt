@@ -12,6 +12,10 @@ import kotlin.coroutines.CoroutineContext
 
 public interface FunctionalComponent : StateHolder, CoroutineScope {
 
+    public fun onCreate(block: () -> Unit)
+
+    public fun onDestroy(block: () -> Unit)
+
     @TagMarker
     public fun render(block: ComponentRenderFunction)
 }
@@ -20,9 +24,19 @@ public interface FunctionalComponent : StateHolder, CoroutineScope {
 internal class SimpleFunctionalComponent : AbstractStateHolder(), FunctionalComponent {
 
     private var render: ComponentRenderFunction? = null
+    private var onCreate: (() -> Unit)? = null
+    private var onDestroy: (() -> Unit)? = null
 
     override val coroutineContext: CoroutineContext =
         SupervisorJob() + Dispatchers.Default
+
+    override fun onCreate(block: () -> Unit) {
+        onCreate = block
+    }
+
+    override fun onDestroy(block: () -> Unit) {
+        onDestroy = block
+    }
 
     override fun render(block: ComponentRenderFunction) {
         this.render = block
@@ -30,6 +44,12 @@ internal class SimpleFunctionalComponent : AbstractStateHolder(), FunctionalComp
 
     @PublishedApi
     internal fun getComponentRender(): ComponentRenderFunction = render ?: {}
+
+    @PublishedApi
+    internal fun getOnCreate(): (() -> Unit)? = onCreate
+
+    @PublishedApi
+    internal fun getOnDestroy(): (() -> Unit)? = onDestroy
 }
 
 @TagMarker
@@ -44,6 +64,8 @@ public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
         renderFunction = functionalComponent.getComponentRender(),
         states = states,
         scope = functionalComponent,
+        onCreate = functionalComponent.getOnCreate(),
+        onDestroy = functionalComponent.getOnDestroy(),
     )
 
     // Make sure the parent knows about this component.
@@ -59,5 +81,5 @@ public fun FlowContent.component(block: FunctionalComponent.() -> Unit) {
     }
 
     // Initial render of the component.
-    component.render()
+    component.create()
 }

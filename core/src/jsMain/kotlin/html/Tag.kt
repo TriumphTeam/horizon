@@ -57,15 +57,15 @@ public abstract class AbstractTag(
             oldElement.setAttribute(name, newValue)
         }
 
-        // Now we need to check and update each child element.
-        val children = oldElement.childNodes
-        val newChildren = newElement.childNodes
-        val newCount = newChildren.length
-        val minCount = minOf(children.length, newChildren.length)
+        // Snapshot child lists to avoid issues with live NodeList mutation.
+        val oldChildren = (0..<oldElement.childNodes.length).mapNotNull { oldElement.childNodes.item(it) }
+        val newChildren = (0..<newElement.childNodes.length).mapNotNull { newElement.childNodes.item(it) }
+        val newCount = newChildren.size
+        val minCount = minOf(oldChildren.size, newChildren.size)
 
         for (index in 0..<minCount) {
-            val existingChild = children.item(index) ?: continue
-            val newChild = newChildren.item(index) ?: continue
+            val existingChild = oldChildren[index]
+            val newChild = newChildren[index]
 
             // If they are the same type.
             if (existingChild.nodeName == newChild.nodeName) {
@@ -82,25 +82,20 @@ public abstract class AbstractTag(
                 }
 
                 if (existingChild.isEqualNode(newChild)) continue
-
-                // Replace the old child with a CLONE of the new one.
-                oldElement.replaceChild(newChild.cloneNode(deep = true), existingChild)
-                continue
             }
 
-            // If they are a different tag, we can just replace them with a CLONE.
-            oldElement.replaceChild(newChild.cloneNode(deep = true), existingChild)
+            // Replace directly — move the node instead of cloning to preserve event listeners.
+            oldElement.replaceChild(newChild, existingChild)
         }
 
-        // Now we can remove extra existing children.
-        (newCount..<oldElement.childNodes.length).mapNotNull {
-            oldElement.childNodes.item(it)
-        }.forEach { oldElement.removeChild(it) }
+        // Now we can remove extra existing children (iterate in reverse to avoid index shifting).
+        for (index in (oldChildren.size - 1) downTo newCount) {
+            oldElement.removeChild(oldChildren[index])
+        }
 
-        // And finally add the new children (as CLONES).
+        // And finally add the new children (move, not clone).
         for (index in minCount..<newCount) {
-            val newChild = newChildren.item(index) ?: continue
-            oldElement.appendChild(newChild.cloneNode(deep = true))
+            oldElement.appendChild(newChildren[index])
         }
     }
 }
@@ -122,6 +117,11 @@ public abstract class FlowTag(
 
     override fun appendChild(child: Tag) {
         element.appendChild(child.element)
+    }
+
+    @UnsafeApi
+    public inline fun innerHtml(html: String) {
+        element.innerHTML = html
     }
 }
 

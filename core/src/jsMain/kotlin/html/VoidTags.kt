@@ -61,11 +61,33 @@ public inline fun FlowContent.br(block: TagAttributeScope.() -> Unit = {}): Tag 
 }
 
 @TagMarker
+public inline fun FlowContent.hr(
+    id: String? = null,
+    className: String? = null,
+    attributes: MutableMap<String, String> = mutableMapOf(),
+    block: TagAttributeScope.() -> Unit = {},
+): Tag {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return tag(
+        tag = VoidTag(
+            tagName = "hr",
+            parentComponent = parentComponent,
+            initialAttributes = attributes.withAttributes(
+                HtmlAttributes.ID to id,
+                HtmlAttributes.CLASS to className,
+            ),
+        ),
+        block = block,
+    )
+}
+
+@TagMarker
 public inline fun FlowContent.img(
     id: String? = null,
     className: String? = null,
     src: String? = null,
     alt: String? = null,
+    title: String? = null,
     draggable: Boolean? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: ImgTag.() -> Unit = {},
@@ -80,6 +102,7 @@ public inline fun FlowContent.img(
                 HtmlAttributes.SRC to src,
                 HtmlAttributes.ALT to alt,
                 HtmlAttributes.DRAGGABLE to draggable?.toString(),
+                HtmlAttributes.TITLE to title,
             ),
         ),
         block = block,

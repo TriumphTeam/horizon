@@ -1,6 +1,7 @@
 package dev.triumphteam.horizon.html
 
 import dev.triumphteam.horizon.html.attributes.HtmlAttributes
+import dev.triumphteam.horizon.html.attributes.Target
 import dev.triumphteam.horizon.html.element.ATag
 import dev.triumphteam.horizon.html.element.AudioTag
 import dev.triumphteam.horizon.html.element.BlockQuoteTag
@@ -14,6 +15,7 @@ import dev.triumphteam.horizon.html.element.ScriptTag
 import dev.triumphteam.horizon.html.element.SimpleFlowTag
 import dev.triumphteam.horizon.html.element.StyleTag
 import dev.triumphteam.horizon.html.element.TextAreaTag
+import dev.triumphteam.horizon.html.element.VideoTag
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -22,6 +24,8 @@ public inline fun FlowContent.a(
     id: String? = null,
     className: String? = null,
     href: String? = null,
+    target: Target? = null,
+    rel: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: ATag.() -> Unit = {},
 ): Tag {
@@ -33,6 +37,8 @@ public inline fun FlowContent.a(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
                 HtmlAttributes.HREF to href,
+                HtmlAttributes.TARGET to target?.value,
+                HtmlAttributes.REL to rel,
             ),
         ),
         block = block,
@@ -257,6 +263,7 @@ public inline fun FlowContent.canvas(
 public inline fun FlowContent.code(
     id: String? = null,
     className: String? = null,
+    lang: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: FlowTag.() -> Unit = {},
 ): FlowTag {
@@ -268,6 +275,7 @@ public inline fun FlowContent.code(
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
+                HtmlAttributes.LANG to lang,
             ),
         ),
         block = block,
@@ -698,6 +706,7 @@ public inline fun FlowContent.p(
 public inline fun FlowContent.pre(
     id: String? = null,
     className: String? = null,
+    lang: String? = null,
     attributes: MutableMap<String, String> = mutableMapOf(),
     crossinline block: FlowTag.() -> Unit = {},
 ): FlowTag {
@@ -709,6 +718,7 @@ public inline fun FlowContent.pre(
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
+                HtmlAttributes.LANG to lang,
             ),
         ),
         block = block,
@@ -1105,6 +1115,34 @@ public inline fun FlowContent.varTag(
             initialAttributes = attributes.withAttributes(
                 HtmlAttributes.ID to id,
                 HtmlAttributes.CLASS to className,
+            ),
+        ),
+        block = block,
+    )
+}
+
+@TagMarker
+public inline fun FlowContent.video(
+    id: String? = null,
+    className: String? = null,
+    src: String? = null,
+    loop: Boolean? = null,
+    autoPlay: Boolean? = null,
+    muted: Boolean? = null,
+    attributes: MutableMap<String, String> = mutableMapOf(),
+    crossinline block: VideoTag.() -> Unit = {},
+): VideoTag {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return tag(
+        tag = VideoTag(
+            parentComponent = parentComponent,
+            initialAttributes = attributes.withAttributes(
+                HtmlAttributes.ID to id,
+                HtmlAttributes.CLASS to className,
+                HtmlAttributes.SRC to src,
+                HtmlAttributes.LOOP to loop?.toString(),
+                HtmlAttributes.AUTOPLAY to autoPlay?.toString(),
+                HtmlAttributes.MUTED to muted?.toString(),
             ),
         ),
         block = block,

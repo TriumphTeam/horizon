@@ -18,7 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import org.w3c.dom.Element
 
 internal typealias RouteBlock<T> = FlowContent.(route: T) -> Unit
-internal typealias RouteProvider<T> = (routeSegments: List<Segment>, variables: Map<String, String>) -> T?
+internal typealias RouteProvider<T> = (scope: CoroutineScope, routeSegments: List<Segment>, variables: Map<String, String>) -> T?
 
 @PublishedApi
 internal class Router(private val rootElement: Element) {
@@ -33,7 +33,7 @@ internal class Router(private val rootElement: Element) {
     private val routes: MutableList<SegmentedRoute<*>> = mutableListOf(
         createSegmentedRoute(
             path = "/404",
-            routeProvider = { _, _ -> DefaultUnsegmentedRoute },
+            routeProvider = { _, _, _ -> DefaultUnsegmentedRoute },
         ) {
             div { text("404 Not Found") }
         },
@@ -45,7 +45,7 @@ internal class Router(private val rootElement: Element) {
     internal fun index(block: RouteBlock<DefaultUnsegmentedRoute>) {
         indexRoute = createSegmentedRoute(
             path = DEFAULT_INDEX_ROUTE,
-            routeProvider = { _, _ -> DefaultUnsegmentedRoute },
+            routeProvider = { _, _, _ -> DefaultUnsegmentedRoute },
             block = block,
         )
     }
@@ -54,7 +54,7 @@ internal class Router(private val rootElement: Element) {
     internal fun route(path: String, block: RouteBlock<DefaultSegmentedRoute>) {
         this.routes += createSegmentedRoute(
             path = path,
-            routeProvider = { routeSegments, variables ->
+            routeProvider = { _, routeSegments, variables ->
                 DefaultSegmentedRoute(routeSegments, variables)
             },
             block = block,
@@ -231,7 +231,8 @@ internal data class SegmentedRoute<T : Route>(
 ) {
 
     internal fun createComponent(variables: Map<String, String>): RouteComponent<T>? {
-        val route = routeProvider(segments, variables) ?: return null
+        val pageScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val route = routeProvider(pageScope, segments, variables) ?: return null
 
         return RouteComponent(
             segmentedRoute = this,
@@ -240,6 +241,7 @@ internal data class SegmentedRoute<T : Route>(
                 block(this, route)
             },
             route = route,
+            scope = pageScope,
         )
     }
 }
@@ -255,7 +257,8 @@ internal class RouteComponent<T : Route>(
     internal val rootElement: Element,
     internal val renderFunction: ComponentRenderFunction,
     internal val route: T,
-) : AbstractComponent(emptyList(), CoroutineScope(SupervisorJob() + Dispatchers.Default)) {
+    internal val scope: CoroutineScope,
+) : AbstractComponent(emptyList(), scope, onCreate = null, onDestroy = null) {
 
     override val renderedElements: MutableList<Tag> = mutableListOf()
 
@@ -309,7 +312,7 @@ internal class DefaultSegmentedRoute(routeSegments: List<Segment>, variables: Ma
 
     override fun updateVariables(variables: Map<String, String>): RouteVariablesUpdateResult {
         val updated = variables.map { (name, newValue) ->
-            variableStates[name]?.setValue(newValue) ?: return@map false
+            variableStates[name]?.internalSetValue(newValue) ?: return@map false
         }.any { it }
 
         return if (updated) RouteVariablesUpdateResult.UPDATED else RouteVariablesUpdateResult.NOT_UPDATED

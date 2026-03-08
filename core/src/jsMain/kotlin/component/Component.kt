@@ -16,6 +16,8 @@ public interface Component : ReactiveElement {
 
     public val renderedElements: List<Tag>
 
+    public fun create()
+
     /**
      * The render function is responsible for adding elements directly to the DOM.
      * The rendering is done at initialization and whenever the component's state changes.
@@ -34,9 +36,16 @@ public interface Component : ReactiveElement {
 internal abstract class AbstractComponent(
     protected val states: List<State<*>>,
     private val scope: CoroutineScope,
+    private val onCreate: (() -> Unit)?,
+    private val onDestroy: (() -> Unit)?,
 ) : Component {
 
     protected val children: MutableList<Component> = mutableListOf()
+
+    override fun create() {
+        onCreate?.invoke()
+        render()
+    }
 
     override fun refresh() {
         clear()
@@ -50,6 +59,9 @@ internal abstract class AbstractComponent(
                 state.removeListener(this)
             }
         }
+
+        // Makes sure to call the call back before the component is destroyed.
+        onDestroy?.invoke()
 
         // When being destroyed, we have to cancel all coroutines running.
         scope.cancel()
@@ -80,7 +92,9 @@ internal class ReactiveComponent(
     private val renderFunction: ComponentRenderFunction,
     states: List<State<*>>,
     scope: CoroutineScope,
-) : AbstractComponent(states, scope) {
+    onCreate: (() -> Unit)?,
+    onDestroy: (() -> Unit)?,
+) : AbstractComponent(states, scope, onCreate, onDestroy) {
 
     private val lastNodeAtCreation: Node? =
         parentComponent.renderedElements.lastOrNull()?.element ?: boundNode.lastChild
