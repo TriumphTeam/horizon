@@ -5,8 +5,10 @@ import dev.triumphteam.horizon.html.Tag
 import dev.triumphteam.horizon.html.createHtml
 import dev.triumphteam.horizon.state.AbstractState
 import dev.triumphteam.horizon.state.State
+import kotlinx.browser.document
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import org.w3c.dom.Comment
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
@@ -96,9 +98,14 @@ internal class ReactiveComponent(
     onDestroy: (() -> Unit)?,
 ) : AbstractComponent(states, scope, onCreate, onDestroy) {
 
-    private val lastNodeAtCreation: Node? =
-        parentComponent.renderedElements.lastOrNull()?.element ?: boundNode.lastChild
+    private val startMarker: Comment = document.createComment("component-start")
+    private val endMarker: Comment = document.createComment("component-end")
+
     override val renderedElements: MutableList<Tag> = mutableListOf()
+
+    init {
+        insertMarkers(parentComponent)
+    }
 
     override fun render() {
         // Copy the previous elements to make it easier to modify the current ones.
@@ -109,21 +116,15 @@ internal class ReactiveComponent(
         // We need the iterator to compare the previous elements with the new ones.
         val previousIterator = previousElements.iterator()
 
-        fun appendElement(element: Tag, anchor: Node?) {
+        fun appendElement(element: Tag) {
             // Mark the element as rendered.
             renderedElements += element
 
-            // Check if we need to append last or append before.
-            if (anchor == null) {
-                boundNode.appendChild(element.element)
-                return
-            }
-
             // The only option left is to append before.
-            boundNode.insertBefore(element.element, anchor)
+            boundNode.insertBefore(element.element, endMarker)
         }
 
-        fun createElements(anchor: Node?) {
+        fun createElements() {
             // Then proceed to attempt to create the HTML for the component.
             createHtml(parentComponent = this, element = boundNode, renderFunction = renderFunction) { newElement ->
                 // Check if we need to compare elements.
@@ -145,7 +146,7 @@ internal class ReactiveComponent(
                     }
 
                     // If we have nothing to compare, we append it.
-                    else -> appendElement(newElement, anchor)
+                    else -> appendElement(newElement)
                 }
             }
 
@@ -155,36 +156,8 @@ internal class ReactiveComponent(
             }
         }
 
-        val lastNode = lastNodeAtCreation
-
-        // If this is null, it means we are the first node.
-        if (lastNode == null) {
-            // Check if an element already exists.
-            val anchor = boundNode.firstChild
-
-            // If nothing exists, it means this component is the only one.
-            if (anchor == null) {
-                createElements(null)
-                return
-            }
-
-            // If we have a first element, we insert before it.
-            createElements(anchor)
-            return
-        }
-
-        // Here we can assume we have a node we must be after.
-        // So we get its next sibling.
-        val anchor = lastNode.nextSibling
-
-        // If no sibling exists, we append as if we're the last node.
-        if (anchor == null) {
-            createElements(null)
-            return
-        }
-
         // If we do have it, we insert before it.
-        createElements(anchor)
+        createElements()
     }
 
     override fun fullClear() {
@@ -195,6 +168,23 @@ internal class ReactiveComponent(
             tag.element.remove()
         }
         renderedElements.clear()
+
+        // Also remove the markers.
+        startMarker.remove()
+        endMarker.remove()
+    }
+
+    private fun insertMarkers(parentComponent: Component) {
+        val anchor = parentComponent.renderedElements.lastOrNull()?.element?.nextSibling
+
+        if (anchor != null && anchor.parentNode == boundNode) {
+            boundNode.insertBefore(startMarker, anchor)
+            boundNode.insertBefore(endMarker, anchor)
+            return
+        }
+
+        boundNode.appendChild(startMarker)
+        boundNode.appendChild(endMarker)
     }
 }
 
